@@ -1,6 +1,7 @@
 # Tmux Vim-like Keybindings Cheat Sheet
 
 ## Pane Navigation
+
 | Key | Action |
 |-----|--------|
 | `prefix + h` | Move to left pane |
@@ -9,6 +10,7 @@
 | `prefix + l` | Move to right pane |
 
 ## Window Navigation
+
 | Key | Action |
 |-----|--------|
 | `prefix + 0-9` | Jump to window 0-9 |
@@ -16,6 +18,7 @@
 | `prefix + n` | Next window |
 
 ## Creating & Closing
+
 | Key | Action |
 |-----|--------|
 | `prefix + t` | New window |
@@ -24,6 +27,7 @@
 | `prefix + Q` | Close current window |
 
 ## Pane Resizing
+
 | Key | Action |
 |-----|--------|
 | `prefix + H` | Resize left (repeat) |
@@ -32,6 +36,7 @@
 | `prefix + L` | Resize right (repeat) |
 
 ## Copy Mode (Vim-style)
+
 | Key | Action |
 |-----|--------|
 | `prefix + [` | Enter copy mode |
@@ -41,6 +46,7 @@
 | `prefix + ]` | Paste |
 
 ## Utility
+
 | Key | Action |
 |-----|--------|
 | `prefix + r` | Reload config |

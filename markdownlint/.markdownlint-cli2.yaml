@@ -1,0 +1,9 @@
+# markdownlint-cli2 configuration (consumed by LazyVim's markdown extra).
+# Tracked in this repo; nvim's markdownlint-cli2 is pointed at it via --config
+# (see nvim/lua/plugins/markdown.lua), and it is symlinked to
+# ~/.markdownlint-cli2.yaml so cwd-based discovery picks it up too.
+config:
+  # Don't enforce a hard line-length limit — prose and long URLs wrap freely.
+  MD013: false
+  # Don't enforce table pipe spacing/alignment style — purely cosmetic.
+  MD060: false

@@ -11,7 +11,7 @@ Personal development environment configuration files.
 | Neovim | `nvim/` | LazyVim setup with LSP, DAP, and multi-language support |
 | Claude Code | `claude/` | `settings.json` (Vim mode) and a custom `statusline.py` |
 
-*Planned: Opencode configs*
+> Planned: Opencode configs
 
 ## Quick Start
 
@@ -22,34 +22,41 @@ sudo apt-get install -y zsh curl git fontconfig tmux neovim ripgrep fd-find npm 
 ```
 
 **Note:** For WSL or Wayland, also install `wl-clipboard`:
+
 ```bash
 sudo apt-get install -y wl-clipboard
 ```
 
 **Language toolchains:** the Neovim config enables LazyVim language extras whose Mason servers need their toolchain on `PATH`. For Go (`gopls`) and .NET/F# (`fsautocomplete`):
+
 ```bash
 sudo apt-get install -y golang-go dotnet-sdk-10.0
 ```
+
 `python3-venv` (above) is required for pip-based Mason tools such as `ruff`.
 
 ### Installation
 
 1. **Clone this repo:**
+
    ```bash
    git clone <repo-url> ~/repositories/dotfiles
    ```
 
 2. **Set zsh as default shell:**
+
    ```bash
    chsh -s $(which zsh)
    ```
 
 3. **Install Oh My Zsh:**
+
    ```bash
    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
    ```
 
 4. **Install MesloLGS NF font** (required for Powerlevel10k icons):
+
    ```bash
    mkdir -p ~/.local/share/fonts && cd ~/.local/share/fonts
    curl -fLO https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
@@ -58,15 +65,18 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    curl -fLO https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf
    fc-cache -f -v
    ```
+
    Then set **MesloLGS NF** as your terminal font.
 
 5. **Install Powerlevel10k:**
+
    ```bash
    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
      ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
    ```
 
 6. **Install plugins:**
+
    ```bash
    git clone https://github.com/zsh-users/zsh-autosuggestions \
      ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
@@ -77,12 +87,14 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    ```
 
 7. **Install fzf:**
+
    ```bash
    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
    ~/.fzf/install --all
    ```
 
 8. **Symlink configs:**
+
    ```bash
    ln -sf ~/repositories/dotfiles/zsh/.zshrc ~/.zshrc
    ln -sf ~/repositories/dotfiles/zsh/.p10k.zsh ~/.p10k.zsh
@@ -90,14 +102,17 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    ln -sfn ~/repositories/dotfiles/nvim ~/.config/nvim
    mkdir -p ~/.claude
    ln -sf ~/repositories/dotfiles/claude/settings.json ~/.claude/settings.json
+   ln -sf ~/repositories/dotfiles/markdownlint/.markdownlint-cli2.yaml ~/.markdownlint-cli2.yaml
    ```
 
 9. **Configure Powerlevel10k** (optional, to customize):
+
    ```bash
    p10k configure
    ```
 
 10. **Install Neovim plugins and LSP servers:**
+
     ```bash
     nvim  # Wait for LazyVim to install plugins
     # Then inside Neovim:

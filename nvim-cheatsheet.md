@@ -297,12 +297,14 @@
 ## Quick Reference: Common Workflows
 
 ### Opening a project and finding a file
+
 1. `nvim .` - Open Neovim in current directory
 2. `<leader>e` - Open file explorer
 3. `<leader>ff` - Fuzzy find file by name
 4. `<leader>fg` - Search file contents
 
 ### Navigating a large file
+
 1. `<leader>ff` - Find and open file
 2. `<leader>fg` or `/` - Search for content
 3. `n` / `N` - Jump between matches (centered)
@@ -310,6 +312,7 @@
 5. `{number}j` / `{number}k` - Jump N lines using relative line numbers
 
 ### Debugging code
+
 1. `<leader>db` - Set breakpoint
 2. `<leader>dc` - Start/continue debugging
 3. `<leader>di` / `<leader>do` / `<leader>dO` - Step through code
@@ -317,12 +320,14 @@
 5. `<leader>de` - Evaluate expression
 
 ### Refactoring
+
 1. `<leader>cr` - Rename symbol (LSP)
 2. `<leader>ca` - Code action
 3. `<leader>cf` - Format file
 4. `v` + `<leader>rw` - Rename in buffer
 
 ### Git workflow
+
 1. `<leader>gg` - Open LazyGit
 2. `<leader>gb` - View blame
 3. `[h` / `]h` - Navigate hunks

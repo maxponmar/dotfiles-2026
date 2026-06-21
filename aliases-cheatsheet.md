@@ -95,7 +95,7 @@ Edit that file to change them, then run `source ~/.zshrc` (or open a new shell).
 | `tk` | `tmux kill-session -t` | kill named session |
 | `tka` | `tmux kill-server` | kill all sessions |
 
-## .NET / C#
+## .NET / C\#
 
 > Requires the .NET SDK (`dotnet`). EF aliases need the `dotnet-ef` global tool.
 

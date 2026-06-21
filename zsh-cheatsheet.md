@@ -3,6 +3,7 @@
 ## Plugins Overview
 
 ### zsh-autosuggestions
+
 Suggests commands as you type based on history.
 
 | Key | Action |
@@ -12,12 +13,15 @@ Suggests commands as you type based on history.
 | `End` | Accept full suggestion |
 
 ### zsh-syntax-highlighting
+
 Colors commands as you type:
+
 - **Green** = valid command
 - **Red** = invalid command
 - **Underline** = valid path/argument
 
 ### zsh-z (Directory Jumping)
+
 Jump to frequently used directories without typing full paths.
 
 | Command | Action |
@@ -29,6 +33,7 @@ Jump to frequently used directories without typing full paths.
 | `z -t <pattern>` | Jump by most recently used |
 
 **Examples:**
+
 ```bash
 z dotfiles    # Jump to ~/repositories/dotfiles (if visited before)
 z config nvim # Jump to a path containing both "config" and "nvim"
@@ -44,6 +49,7 @@ z config nvim # Jump to a path containing both "config" and "nvim"
 | `**<Tab>` | Fuzzy completion for paths, variables, etc. |
 
 **Examples:**
+
 ```bash
 vim **<Tab>        # Fuzzy find files to open
 cd **<Tab>         # Fuzzy find directories

@@ -12,8 +12,11 @@ Personal dotfiles for a WSL2/Linux dev environment. There is no build, lint, or 
 | Tmux | `tmux/.tmux.conf` | `~/.tmux.conf` |
 | Neovim | `nvim/` (whole dir) | `~/.config/nvim` |
 | Claude Code | `claude/settings.json` | `~/.claude/settings.json` |
+| markdownlint | `markdownlint/.markdownlint-cli2.yaml` | `~/.markdownlint-cli2.yaml` |
 
 `claude/statusline.py` is referenced by absolute path from `settings.json` (not symlinked); `settings.json`'s `statusLine.command` invokes it via `python3`.
+
+The markdownlint config relaxes `MD013` (line length) and `MD060` (table column style). Neovim lints markdown with `markdownlint-cli2` (via nvim-lint), which only discovers config from the cwd downward — so `nvim/lua/plugins/markdown.lua` passes `--config ~/.markdownlint-cli2.yaml` explicitly to make the relaxed rules apply regardless of where `nvim` was launched. Edit the rule set in `markdownlint/.markdownlint-cli2.yaml` (the symlink source).
 
 ## Applying / reloading changes
 
