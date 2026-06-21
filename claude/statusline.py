@@ -4,9 +4,11 @@
 Reads the status JSON from stdin (schema:
 https://code.claude.com/docs/en/statusline.md) and prints a single line:
 
-    <model> | ctx <pct>% | $<cost> | 5h <pct>% (<reset>) | wk <pct>% (<reset>)
+    <dir>  <branch> | <model> | ctx <pct>% | $<cost> | 5h <pct>% (<reset>) | wk <pct>% (<reset>)
 
-  - model: current model display name
+  - dir:    current working directory (basename)
+  - branch: current git branch (omitted outside a git repo)
+  - model:  current model display name
   - ctx:   context-window utilization
   - $:     session cost in USD (Claude bills subscriptions, but this value is
            the API-pricing equivalent of the tokens used)
@@ -18,6 +20,8 @@ response, so each is rendered only when present.
 """
 
 import json
+import os
+import subprocess
 import sys
 import time
 
@@ -38,6 +42,7 @@ RED = fg(167)
 BLUE = fg(75)
 GREY = fg(245)
 PURPLE = fg(140)
+CYAN = fg(80)
 
 
 def usage_color(pct):
@@ -65,6 +70,23 @@ def fmt_reset(epoch):
     return f"{m}m"
 
 
+def git_branch(cwd):
+    """Current git branch in *cwd*, or None if not a repo / detached HEAD."""
+    try:
+        out = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=1,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout.strip() or None
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -72,6 +94,15 @@ def main():
         return
 
     segments = []
+
+    # Working directory + git branch ----------------------------------------
+    cwd = (data.get("workspace") or {}).get("current_dir") or data.get("cwd")
+    if cwd:
+        loc = f"{CYAN}{os.path.basename(cwd)}{RESET}"
+        branch = git_branch(cwd)
+        if branch:
+            loc += f" {GREEN} {branch}{RESET}"
+        segments.append(loc)
 
     # Model -----------------------------------------------------------------
     model = (data.get("model") or {}).get("display_name") or "?"
