@@ -33,8 +33,8 @@
 
 | Key | Action |
 |-----|--------|
-| `<leader>ff` | Find files |
-| `<leader>fF` | Find files (including hidden) |
+| `<leader>ff` | Find files (fff.nvim — fast fuzzy finder) |
+| `<leader>fF` | Find files via Telescope (including hidden) |
 | `<leader>fg` | Live grep (search content) |
 | `<leader>fw` | Search word under cursor |
 | `<leader>fb` | Find open buffers |

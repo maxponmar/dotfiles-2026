@@ -52,8 +52,9 @@ return {
       })
     end,
     keys = {
-      { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find files" },
-      { "<leader>fF", "<cmd>Telescope find_files hidden=true<cr>", desc = "Find files (all)" },
+      -- <leader>ff is owned by fff.nvim (see plugins/fff.lua); disable here.
+      { "<leader>ff", false },
+      { "<leader>fF", "<cmd>Telescope find_files hidden=true<cr>", desc = "Find files (Telescope, all)" },
       { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
       { "<leader>fw", "<cmd>Telescope grep_string<cr>", desc = "Find word under cursor" },
       { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Find buffers" },
