@@ -94,6 +94,10 @@
 | `<C-u>` | Scroll up half page (centered) |
 | `<C-f>` | Scroll down full page (centered) |
 | `<C-b>` | Scroll up full page (centered) |
+| `<C-e>` | Scroll view down one line (cursor stays) |
+| `<C-y>` | Scroll view up one line (cursor stays) |
+| `{` / `}` | Jump up / down by paragraph (blank-line block) |
+| `<C-o>` / `<C-i>` | Jump back / forward through jump history |
 | `n` | Next search result (centered) |
 | `N` | Previous search result (centered) |
 | `gg` | Go to first line |
@@ -187,6 +191,8 @@
 | `<leader>tx` | Close tab |
 | `<leader>tn` | Next tab |
 | `<leader>tp` | Previous tab |
+| `gt` / `gT` | Next / previous tab (built-in) |
+| `{number}gt` | Go to tab number N |
 | `<C-h>` | Move to left window |
 | `<C-j>` | Move to window below |
 | `<C-k>` | Move to window above |
@@ -198,11 +204,14 @@
 
 | Key | Action |
 |-----|--------|
-| `<S-h>` | Previous buffer |
-| `<S-l>` | Next buffer |
+| `<S-h>` | Previous buffer (Shift+h) |
+| `<S-l>` | Next buffer (Shift+l) |
+| `[b` / `]b` | Previous / next buffer (alternate) |
+| `` <leader>` `` | Switch to last buffer |
 | `<leader>bd` | Delete buffer |
 | `<leader>bD` | Delete buffer (force) |
 | `<leader>bo` | Delete other buffers |
+| `<leader>bp` | Toggle pin buffer |
 | `<leader>bb` | Select buffer |
 | `<leader>bf` | Find buffer |
 
