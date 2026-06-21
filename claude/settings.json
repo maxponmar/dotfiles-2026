@@ -1,0 +1,9 @@
+{
+  "theme": "dark",
+  "editorMode": "vim",
+  "statusLine": {
+    "type": "command",
+    "command": "python3 $HOME/repositories/dotfiles/claude/statusline.py",
+    "padding": 1
+  }
+}
