@@ -15,6 +15,63 @@ Personal development environment configuration files.
 
 ## Quick Start
 
+### Automated install (recommended)
+
+Clone the repo and run `install.sh`. It auto-detects your platform (Linux, WSL2,
+or macOS) and package manager (apt/dnf/pacman/zypper/brew), installs
+dependencies, sets up Oh My Zsh + Powerlevel10k + plugins + fzf, configures
+Claude Code, and symlinks the configs — **backing up anything it would
+overwrite** so the change is reversible.
+
+```bash
+git clone <repo-url> ~/repositories/dotfiles
+cd ~/repositories/dotfiles
+./install.sh                 # everything
+```
+
+Partial installs — pick only what you want:
+
+```bash
+./install.sh --nvim --tmux   # just Neovim + tmux
+./install.sh --zsh           # shell only (zsh + p10k + plugins + aliases)
+./install.sh --claude        # Claude Code only
+./install.sh --aliases       # add the aliases to your existing shell, nothing else
+```
+
+Useful flags:
+
+```bash
+./install.sh --dry-run       # show what would happen, change nothing
+./install.sh --no-deps       # only create symlinks, skip installing packages
+./install.sh --with-go --with-dotnet   # also install the Go / .NET LSP toolchains
+./install.sh --help          # full usage
+```
+
+**Undo / restore.** Every run saves displaced files under
+`~/.dotfiles-backup/<timestamp>/` and records a manifest. To revert:
+
+```bash
+./uninstall.sh               # restore the most recent backup
+./uninstall.sh --list        # list available backups
+./uninstall.sh --from <timestamp>   # restore a specific one
+```
+
+`uninstall.sh` only removes symlinks that still point into this repo and never
+overwrites files you changed yourself (use `--force` to override). Each
+`install.sh` run creates its own timestamped backup set; if you ran the
+installer more than once, your *original* pre-install files live in the
+**earliest** backup — restore them with `./uninstall.sh --from <timestamp>`
+(see `--list`).
+
+> **WSL note:** install the **MesloLGS NF** font on **Windows** (not inside WSL)
+> and set it as your Windows Terminal / VS Code font — the installer prints the
+> exact links. Clone into the Linux filesystem (e.g. `~/repositories`), not
+> `/mnt/c`, for speed.
+
+### Manual install
+
+If you prefer to do it by hand, the steps below set up the same thing.
+
 ### Prerequisites
 
 ```bash

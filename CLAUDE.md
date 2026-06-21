@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal dotfiles for a WSL2/Linux dev environment. There is no build, lint, or test step — changes are validated by reloading the relevant tool. The repo is consumed by **symlinking** files into their expected locations (see README.md step 8); editing a file here changes the live config once symlinks are in place.
 
+`install.sh` automates setup cross-platform (Linux / WSL2 / macOS): it detects the OS + package manager (apt/dnf/pacman/zypper/brew), installs deps, sets up the tooling, and creates the symlinks below — backing up anything it displaces to `~/.dotfiles-backup/<timestamp>/` with a TSV manifest. `uninstall.sh` reverses a run from that manifest. Supports partial installs (`--zsh/--tmux/--nvim/--claude/--aliases`), `--no-deps`, `--dry-run`, and `--restore`. Implementation: `scripts/lib/common.sh` (logging, OS detect, backup/manifest, idempotent `link_file`, restore) and `scripts/lib/packages.sh` (package-manager abstraction + tooling installers). **Scripts must stay bash 3.2 compatible** (macOS ships bash 3.2): no associative arrays, `mapfile`, `${v,,}`/`${v^^}`, negative array indices, or GNU-only flags (`readlink -f`, `tac`, in-place `sed -i`, getopt long options).
+
 | Tool | Source | Symlink target |
 |------|--------|----------------|
 | Zsh | `zsh/.zshrc`, `zsh/.p10k.zsh` | `~/.zshrc`, `~/.p10k.zsh` |
