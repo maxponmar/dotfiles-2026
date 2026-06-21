@@ -26,11 +26,12 @@ Personal dotfiles for a WSL2/Linux dev environment. There is no build, lint, or 
 
 This is a LazyVim distribution, not a hand-rolled config. Understanding the layering matters before editing:
 
-- `nvim/init.lua` → bootstraps `nvim/lua/config/lazy.lua`, which clones lazy.nvim and loads `LazyVim/LazyVim` plugins **first**, then imports the local `plugins` spec on top to override.
+- `nvim/init.lua` → bootstraps `nvim/lua/config/lazy.lua`, which clones lazy.nvim and loads `LazyVim/LazyVim` plugins **first**, then the LazyVim "extras" imports, then the local `plugins` spec on top to override. This order matters: LazyVim warns if `lazyvim.plugins.extras.*` imports come after your own `plugins` import, so extras are imported directly in `lazy.lua` (NOT in a file under `plugins/`, which would register the `plugins` module before the extras and trip the check).
 - `nvim/lua/config/` — `options.lua`, `keymaps.lua`, `autocmds.lua` augment (do not replace) LazyVim defaults. These run for every session.
-- `nvim/lua/plugins/` — each file returns a lazy.nvim spec table. `extras.lua` is the key file: it enables LazyVim "extras" (language packs, DAP, testing, linting, formatting) by `import`. Adding a language = add an `import` line here, then `:Mason` install the server. Other files (`telescope.lua`, `flash.lua`, `neo-tree.lua`) override specific plugin options.
+- `nvim/lua/config/lazy.lua` — enables LazyVim "extras" (language packs, DAP, testing, linting, formatting) via `import` entries in the `spec`. Adding a language = add an `import` line here (before `{ import = "plugins" }`), then `:Mason` install the server. Only import extras that exist in the installed LazyVim version, and whose toolchain is present (e.g. `lang.go` needs Go for `gopls`); a missing extra module aborts the whole config load.
+- `nvim/lua/plugins/` — each file returns a lazy.nvim spec table. Files (`telescope.lua`, `flash.lua`, `neo-tree.lua`) override specific plugin options.
 
-When changing editor behavior, decide the right layer: a setting → `config/options.lua`; a keymap → `config/keymaps.lua`; a language toolchain → `plugins/extras.lua`; a plugin's options → a file under `plugins/`.
+When changing editor behavior, decide the right layer: a setting → `config/options.lua`; a keymap → `config/keymaps.lua`; a language toolchain (extra) → `config/lazy.lua`; a plugin's options → a file under `plugins/`.
 
 Custom keymaps deliberately diverge from some LazyVim defaults (e.g. `<leader>h/j/k/l` are remapped to window navigation in `config/keymaps.lua`) — check that file before assuming a key does what stock LazyVim does.
 

@@ -18,13 +18,19 @@ Personal development environment configuration files.
 ### Prerequisites
 
 ```bash
-sudo apt-get install -y zsh curl git fontconfig tmux neovim ripgrep fd-find npm python3-pip luarocks xclip
+sudo apt-get install -y zsh curl git fontconfig tmux neovim ripgrep fd-find npm python3-pip python3-venv luarocks xclip
 ```
 
 **Note:** For WSL or Wayland, also install `wl-clipboard`:
 ```bash
 sudo apt-get install -y wl-clipboard
 ```
+
+**Language toolchains:** the Neovim config enables LazyVim language extras whose Mason servers need their toolchain on `PATH`. For Go (`gopls`) and .NET/F# (`fsautocomplete`):
+```bash
+sudo apt-get install -y golang-go dotnet-sdk-10.0
+```
+`python3-venv` (above) is required for pip-based Mason tools such as `ruff`.
 
 ### Installation
 
