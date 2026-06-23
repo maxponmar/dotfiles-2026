@@ -26,6 +26,8 @@
 #   --dry-run    print what would happen without changing anything
 #   --restore    undo the most recent install (same as ./uninstall.sh)
 #   --list-backups   show available backups and exit
+#   --claude-pull    copy the live ~/.claude/settings.json back into the repo
+#                    (capture gentle-ai's in-place edits), then exit
 #   -h, --help   show this help
 #
 set -euo pipefail
@@ -48,7 +50,7 @@ usage() { awk 'NR>=3 { if (/^#/) { sub(/^# ?/,""); print; next } else exit }' "$
 # --- defaults / flags -------------------------------------------------------
 DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_KITTY=0; DO_ALACRITTY=0; DO_ALIASES=0
 WITH_DEPS=1; WITH_GO=0; WITH_DOTNET=0
-RESTORE=0; LIST=0; FORCE=0
+RESTORE=0; LIST=0; FORCE=0; CLAUDE_PULL=0
 WSL_DISTRO="Ubuntu"   # which WSL distro Alacritty launches / is set as default
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
     --restore)    RESTORE=1 ;;
     --force)      FORCE=1 ;;
     --list-backups) LIST=1 ;;
+    --claude-pull) CLAUDE_PULL=1 ;;
     -h|--help)    usage; exit 0 ;;
     --)           shift; break ;;
     -*)           err "unknown option: $1"; usage; exit 2 ;;
@@ -82,7 +85,7 @@ export DRY_RUN FORCE WSL_DISTRO
 
 # default to everything if no component and not a maintenance action
 if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_KITTY$DO_ALACRITTY$DO_ALIASES" = "00000000" ] \
-   && [ "$RESTORE" -eq 0 ] && [ "$LIST" -eq 0 ]; then
+   && [ "$RESTORE" -eq 0 ] && [ "$LIST" -eq 0 ] && [ "$CLAUDE_PULL" -eq 0 ]; then
   DO_ALL=1
 fi
 if [ "$DO_ALL" -eq 1 ]; then
@@ -94,7 +97,31 @@ detect_os
 detect_pkg_manager
 detect_sudo
 
+# Pull the live ~/.claude/settings.json back into the repo — the reverse of what
+# component_claude deploys. The Claude settings file is copied (not symlinked)
+# because gentle-ai injects persona/permissions/sdd and refuses to write through
+# a symlink, so its edits land on the deployed copy only; this captures them.
+claude_pull() {
+  local live="$HOME/.claude/settings.json" repo="$DOTFILES/claude/settings.json"
+  [ -e "$live" ] || die "no live settings to pull: $live (run ./install.sh --claude first)"
+  # Don't overwrite the repo with broken JSON (python3 ships with the Claude
+  # component; skip the check if it isn't around rather than failing).
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$live" 2>/dev/null \
+      || die "live settings is not valid JSON, refusing to pull: $live"
+  fi
+  if [ -f "$repo" ] && cmp -s "$live" "$repo"; then
+    ok "repo already matches live settings — nothing to pull"; return 0
+  fi
+  run cp "$live" "$repo"
+  ok "pulled $repo <- ${C_DIM}$live${C_RESET}"
+  [ "$DRY_RUN" -eq 1 ] || log "Review with: git -C \"$DOTFILES\" diff -- claude/settings.json"
+}
+
 # --- maintenance actions ----------------------------------------------------
+if [ "$CLAUDE_PULL" -eq 1 ]; then
+  claude_pull; exit 0
+fi
 if [ "$LIST" -eq 1 ]; then
   log "Backups under ~/.dotfiles-backup:"; list_backups; exit 0
 fi
@@ -195,8 +222,9 @@ component_claude() {
     install_claude_code
   fi
   # gentle-ai injects persona/permissions/sdd into ~/.claude/settings.json and
-  # refuses to write through a symlink, so copy (don't link) this one. Repo stays
-  # the source of truth; re-run after gentle-ai edits to capture its changes here.
+  # refuses to write through a symlink, so copy (don't link) this one. The repo
+  # is the source of truth: re-running PUSHES repo -> live (overwriting gentle-ai's
+  # in-place edits). To go the other way and capture those edits, use --claude-pull.
   copy_file "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json"
   ensure_canonical_path   # statusline.py is referenced by absolute path
   return 0
@@ -288,7 +316,7 @@ elif [ "$DO_ZSH" -eq 1 ]; then
   printf '  - Set your terminal font to "MesloLGS NF" for Powerlevel10k icons.\n'
 fi
 if [ "$DO_NVIM" -eq 1 ];   then printf '  - Open nvim once to let Mason finish installing LSP servers (:Mason).\n'; fi
-if [ "$DO_CLAUDE" -eq 1 ]; then printf '  - Run "claude" to start Claude Code (config is symlinked).\n'; fi
+if [ "$DO_CLAUDE" -eq 1 ]; then printf '  - Run "claude" to start Claude Code (settings.json is copied, not symlinked; use ./install.sh --claude-pull to capture in-place edits).\n'; fi
 if [ "$DO_KITTY" -eq 1 ];  then printf '  - Restart Kitty (or ctrl+shift+f5) to load kitty.conf.\n'; fi
 if [ "$DO_ALACRITTY" -eq 1 ] && [ "$OS" = "wsl" ]; then printf '  - Alacritty: install "MesloLGS NF" on Windows (links above), then restart Alacritty.\n'; fi
 printf '  - To undo this install: %s./uninstall.sh%s (backups are in ~/.dotfiles-backup).\n' "$C_BOLD" "$C_RESET"

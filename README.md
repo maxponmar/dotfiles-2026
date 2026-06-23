@@ -255,5 +255,9 @@ path (`$HOME/repositories/dotfiles/claude/statusline.py`), so clone the repo to
 `~/.claude/settings.json` rather than symlinked, because gentle-ai injects
 persona/permissions/sdd into it and refuses to read/write through a symlink —
 so re-run `./install.sh --claude` after editing the repo file to push the
-change (and to overwrite gentle-ai's in-place edits with the repo version).
-Restart Claude Code after copying for the settings to take effect.
+change (this overwrites gentle-ai's in-place edits with the repo version). To
+capture gentle-ai's edits the other way — copy the live
+`~/.claude/settings.json` back into the repo — run `./install.sh --claude-pull`
+(it validates the live file is JSON first and no-ops if nothing changed), then
+review with `git diff`. Restart Claude Code after copying for the settings to
+take effect.
