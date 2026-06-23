@@ -1,4 +1,5 @@
 {
+  "includeCoAuthoredBy": false,
   "statusLine": {
     "type": "command",
     "command": "python3 $HOME/repositories/dotfiles/claude/statusline.py",
@@ -15,9 +16,8 @@
       }
     }
   },
-  "includeCoAuthoredBy": false,
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "editorMode": "vim",
-  "tui": "fullscreen"
+  "editorMode": "vim"
 }

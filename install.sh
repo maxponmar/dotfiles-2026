@@ -194,7 +194,10 @@ component_claude() {
     install_deps python3 curl   # statusline.py runs via python3
     install_claude_code
   fi
-  link_file "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json"
+  # gentle-ai injects persona/permissions/sdd into ~/.claude/settings.json and
+  # refuses to write through a symlink, so copy (don't link) this one. Repo stays
+  # the source of truth; re-run after gentle-ai edits to capture its changes here.
+  copy_file "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json"
   ensure_canonical_path   # statusline.py is referenced by absolute path
   return 0
 }

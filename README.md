@@ -202,7 +202,9 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    ln -sf ~/repositories/dotfiles/tmux/.tmux.conf ~/.tmux.conf
    ln -sfn ~/repositories/dotfiles/nvim ~/.config/nvim
    mkdir -p ~/.claude
-   ln -sf ~/repositories/dotfiles/claude/settings.json ~/.claude/settings.json
+   # Claude settings are COPIED, not symlinked: gentle-ai injects persona/
+   # permissions/sdd into this file and refuses to read/write through a symlink.
+   cp ~/repositories/dotfiles/claude/settings.json ~/.claude/settings.json
    ln -sf ~/repositories/dotfiles/markdownlint/.markdownlint-cli2.yaml ~/.markdownlint-cli2.yaml
    mkdir -p ~/.config/kitty
    ln -sf ~/repositories/dotfiles/kitty/kitty.conf ~/.config/kitty/kitty.conf
@@ -249,5 +251,9 @@ status line (`claude/statusline.py`, run with `python3`) shows the model,
 context utilization, API-equivalent cost, and 5-hour / weekly rate-limit usage.
 The status line command in `settings.json` references the script by absolute
 path (`$HOME/repositories/dotfiles/claude/statusline.py`), so clone the repo to
-`~/repositories/dotfiles` (or edit that path). Restart Claude Code after
-symlinking for the settings to take effect.
+`~/repositories/dotfiles` (or edit that path). This file is **copied** to
+`~/.claude/settings.json` rather than symlinked, because gentle-ai injects
+persona/permissions/sdd into it and refuses to read/write through a symlink —
+so re-run `./install.sh --claude` after editing the repo file to push the
+change (and to overwrite gentle-ai's in-place edits with the repo version).
+Restart Claude Code after copying for the settings to take effect.
