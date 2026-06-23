@@ -225,6 +225,36 @@ function Copy-Config([string]$src, [string]$dst) {
   Ok "copied $dst"
 }
 
+# Append the Windows Terminal shell-integration fragment to the PowerShell 7
+# profile (idempotently, under a marker block). This makes PowerShell report its
+# working directory (OSC 9;9) so duplicate-tab / duplicate-pane open in the
+# current directory instead of the profile's startingDirectory. We append rather
+# than overwrite because $PROFILE is user-owned and may already have content.
+function Add-PSProfileShellIntegration {
+  $marker  = '# >>> dotfiles: windows terminal shell integration >>>'
+  $endmark = '# <<< dotfiles: windows terminal shell integration <<<'
+  $src     = Join-Path $RepoRoot 'windows-terminal\powershell-profile.ps1'
+  if (-not (Test-Path -LiteralPath $src)) { Warn "source missing, skipping: $src"; return }
+
+  # Target PowerShell 7 (pwsh) - Windows Terminal's default profile here. Use
+  # GetFolderPath so a OneDrive-redirected Documents folder resolves correctly.
+  $docs        = [Environment]::GetFolderPath('MyDocuments')
+  $profilePath = Join-Path $docs 'PowerShell\Microsoft.PowerShell_profile.ps1'
+
+  if ((Test-Path -LiteralPath $profilePath) -and
+      (Select-String -LiteralPath $profilePath -SimpleMatch $marker -Quiet)) {
+    Ok "PowerShell profile already has WT shell integration"; return
+  }
+
+  $snippet = Get-Content -LiteralPath $src -Raw
+  Step "add WT shell integration to $profilePath" {
+    New-Item -ItemType Directory -Force -Path (Split-Path $profilePath -Parent) | Out-Null
+    $block = "`r`n$marker`r`n$snippet`r`n$endmark`r`n"
+    Add-Content -LiteralPath $profilePath -Value $block -Encoding UTF8
+  }
+  Ok "PowerShell profile updated - open a new pwsh tab for it to take effect"
+}
+
 # Resolve the Windows Terminal settings.json path. The Store/winget (MSIX)
 # build lives under LocalState\Packages; an unpackaged build uses a plain
 # LocalState dir. Prefer an existing file; otherwise default to the packaged
@@ -271,6 +301,8 @@ function Component-WindowsTerminal {
   # Windows Terminal regenerates its dynamic profiles on next launch, so
   # overwriting settings.json is safe; the prior file is backed up first.
   Copy-Config (Join-Path $RepoRoot 'windows-terminal\settings.json') (Get-WTSettingsPath)
+  # Make new tabs/panes open in the current directory (OSC 9;9 reporting).
+  Add-PSProfileShellIntegration
 }
 
 # --- run -------------------------------------------------------------------

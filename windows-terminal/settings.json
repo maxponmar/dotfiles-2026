@@ -68,7 +68,9 @@
 
         // Pane splits — tmux-style: v splits to the right, s splits below.
         // splitMode "duplicate" keeps the current profile + working directory
-        // (like tmux's -c "#{pane_current_path}").
+        // (like tmux's -c "#{pane_current_path}"). The "same directory" part
+        // only works once the shell reports its CWD via OSC 9;9 — see
+        // windows-terminal/powershell-profile.ps1 (installed into $PROFILE).
         { "command": { "action": "splitPane", "split": "right", "splitMode": "duplicate" }, "keys": "alt+v" },
         { "command": { "action": "splitPane", "split": "down",  "splitMode": "duplicate" }, "keys": "alt+s" },
 
@@ -82,8 +84,10 @@
         { "command": "togglePaneZoom", "keys": "alt+z" },
         { "command": { "action": "closePane" }, "keys": "alt+shift+q" },
 
-        // Tabs ≈ tmux windows
-        { "command": { "action": "newTab" }, "keys": "alt+t" },   // ≈ tmux prefix t
+        // Tabs ≈ tmux windows. duplicateTab (not newTab) so the new tab opens
+        // in the current working directory — needs OSC 9;9 shell integration
+        // (windows-terminal/powershell-profile.ps1), same as the splits above.
+        { "command": "duplicateTab", "keys": "alt+t" },            // ≈ tmux prefix t
         { "command": "nextTab", "keys": "alt+n" },                 // ≈ tmux prefix n
         { "command": "prevTab", "keys": "alt+p" },                 // ≈ tmux prefix p
         { "command": { "action": "closeTab" }, "keys": "alt+shift+w" },

@@ -62,7 +62,11 @@ configured vim/tmux-like). It winget-installs the dependencies, installs the
 `%LOCALAPPDATA%\nvim`, deploys the PowerShell-shell Alacritty config
 (`alacritty/alacritty.windows.toml`) to `%APPDATA%\alacritty\`, and deploys the
 Windows Terminal config (`windows-terminal/settings.json`) to the Terminal's
-`LocalState`.
+`LocalState`. It also appends `windows-terminal/powershell-profile.ps1` to your
+PowerShell 7 `$PROFILE` so new tabs and split panes open in the **current
+directory** (PowerShell only reports its working directory to Windows Terminal
+once this OSC 9;9 shell integration is in place — open a new pwsh tab after
+install for it to take effect).
 
 Run it with **no switch** for an interactive menu that lets you pick exactly
 which components to set up (and whether to install deps / dry-run) — so you can

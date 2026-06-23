@@ -22,8 +22,8 @@ single key combos), so every binding is a direct `Alt`-based combo instead of
 
 | Key | Action |
 |-----|--------|
-| `Alt+v` | Split right (vertical), same dir — ≈ tmux `prefix v` |
-| `Alt+s` | Split below (horizontal), same dir — ≈ tmux `prefix s` |
+| `Alt+v` | Split right (vertical), same dir* — ≈ tmux `prefix v` |
+| `Alt+s` | Split below (horizontal), same dir* — ≈ tmux `prefix s` |
 | `Alt+z` | Toggle pane zoom — ≈ tmux `prefix z` |
 | `Alt+Shift+q` | Close current pane — ≈ tmux `prefix Q` / vim `:q` |
 
@@ -40,11 +40,17 @@ single key combos), so every binding is a direct `Alt`-based combo instead of
 
 | Key | Action |
 |-----|--------|
-| `Alt+t` | New tab — ≈ tmux `prefix t` |
+| `Alt+t` | New tab in same dir* — ≈ tmux `prefix t` |
 | `Alt+n` | Next tab — ≈ tmux `prefix n` |
 | `Alt+p` | Previous tab — ≈ tmux `prefix p` |
 | `Alt+Shift+w` | Close tab |
 | `Alt+1`–`Alt+9` | Jump to tab 1-9 — ≈ tmux `prefix 0-9` |
+
+> \* **Same dir** requires shell integration: `install.ps1` appends
+> `windows-terminal/powershell-profile.ps1` to your PowerShell `$PROFILE` so the
+> shell reports its working directory (OSC 9;9). Without it, new tabs/panes fall
+> back to the profile's `startingDirectory` (your home). Open a new pwsh tab
+> after install for it to take effect.
 
 ## Copy / Search / Settings
 
