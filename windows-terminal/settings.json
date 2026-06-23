@@ -25,9 +25,10 @@
 {
     "$schema": "https://aka.ms/terminal-profiles-schema",
 
-    // PowerShell 7 (pwsh) — installed by install.ps1. If pwsh isn't present,
-    // Windows Terminal falls back to its first generated profile.
-    "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+    // Windows PowerShell (always present on Windows; GUID matches the explicit
+    // profile in profiles.list below). Chosen over PowerShell 7 (pwsh) because
+    // the oh-my-posh prompt is configured in the Windows PowerShell $PROFILE.
+    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
 
     "theme": "dark",
     "copyOnSelect": false,
@@ -61,9 +62,10 @@
         // NOT re-run its dynamic profile generators. An empty list there yields
         // zero profiles and the "all profiles were hidden" load error. These
         // two use WT's canonical built-in GUIDs, so they MERGE with the
-        // auto-generated profiles instead of duplicating them; PowerShell 7
-        // (pwsh, the defaultProfile above) is still added by the generator and
-        // styled by profiles.defaults.
+        // auto-generated profiles instead of duplicating them. Windows
+        // PowerShell here is the defaultProfile above; PowerShell 7 (pwsh) is
+        // still added by the generator if installed. All are styled by
+        // profiles.defaults.
         "list": [
             {
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",

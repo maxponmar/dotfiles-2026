@@ -10,8 +10,10 @@
 # terminal the current path. See:
 # https://learn.microsoft.com/windows/terminal/tutorials/new-tab-same-directory
 #
-# install.ps1 appends this fragment to your PowerShell 7 ($PROFILE) under a
-# marker block, so it composes with anything else already in your profile.
+# install.ps1 appends this fragment to your Windows PowerShell $PROFILE
+# (Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 — Windows
+# Terminal's default profile) under a marker block, so it composes with
+# anything else already in your profile.
 # If you use oh-my-posh / starship / posh-git, keep their init ABOVE this block:
 # it wraps whatever `prompt` is defined when it loads and only appends the
 # OSC sequence, so your existing prompt is preserved.

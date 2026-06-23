@@ -47,10 +47,11 @@ single key combos), so every binding is a direct `Alt`-based combo instead of
 | `Alt+1`–`Alt+9` | Jump to tab 1-9 — ≈ tmux `prefix 0-9` |
 
 > \* **Same dir** requires shell integration: `install.ps1` appends
-> `windows-terminal/powershell-profile.ps1` to your PowerShell `$PROFILE` so the
-> shell reports its working directory (OSC 9;9). Without it, new tabs/panes fall
-> back to the profile's `startingDirectory` (your home). Open a new pwsh tab
-> after install for it to take effect.
+> `windows-terminal/powershell-profile.ps1` to your Windows PowerShell `$PROFILE`
+> (`Documents\WindowsPowerShell\…`, the default profile) so the shell reports its
+> working directory (OSC 9;9). Without it, new tabs/panes fall back to the
+> profile's `startingDirectory` (your home). Open a new terminal tab after
+> install for it to take effect.
 
 ## Copy / Search / Settings
 

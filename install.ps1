@@ -225,8 +225,8 @@ function Copy-Config([string]$src, [string]$dst) {
   Ok "copied $dst"
 }
 
-# Append the Windows Terminal shell-integration fragment to the PowerShell 7
-# profile (idempotently, under a marker block). This makes PowerShell report its
+# Append the Windows Terminal shell-integration fragment to the Windows
+# PowerShell profile (idempotently, under a marker block). This makes PowerShell report its
 # working directory (OSC 9;9) so duplicate-tab / duplicate-pane open in the
 # current directory instead of the profile's startingDirectory. We append rather
 # than overwrite because $PROFILE is user-owned and may already have content.
@@ -236,10 +236,12 @@ function Add-PSProfileShellIntegration {
   $src     = Join-Path $RepoRoot 'windows-terminal\powershell-profile.ps1'
   if (-not (Test-Path -LiteralPath $src)) { Warn "source missing, skipping: $src"; return }
 
-  # Target PowerShell 7 (pwsh) - Windows Terminal's default profile here. Use
+  # Target Windows PowerShell (5.1) - Windows Terminal's default profile here,
+  # and where oh-my-posh is configured. Its profile lives under
+  # Documents\WindowsPowerShell\ (PowerShell 7 uses Documents\PowerShell\). Use
   # GetFolderPath so a OneDrive-redirected Documents folder resolves correctly.
   $docs        = [Environment]::GetFolderPath('MyDocuments')
-  $profilePath = Join-Path $docs 'PowerShell\Microsoft.PowerShell_profile.ps1'
+  $profilePath = Join-Path $docs 'WindowsPowerShell\Microsoft.PowerShell_profile.ps1'
 
   if ((Test-Path -LiteralPath $profilePath) -and
       (Select-String -LiteralPath $profilePath -SimpleMatch $marker -Quiet)) {
@@ -252,7 +254,7 @@ function Add-PSProfileShellIntegration {
     $block = "`r`n$marker`r`n$snippet`r`n$endmark`r`n"
     Add-Content -LiteralPath $profilePath -Value $block -Encoding UTF8
   }
-  Ok "PowerShell profile updated - open a new pwsh tab for it to take effect"
+  Ok "PowerShell profile updated - open a new Windows PowerShell tab for it to take effect"
 }
 
 # Resolve the Windows Terminal settings.json path. The Store/winget (MSIX)
