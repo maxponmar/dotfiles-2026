@@ -1,0 +1,3 @@
+# LazyVim writes this to track which extras are enabled via :LazyExtras.
+# We import extras directly in nvim/lua/config/lazy.lua, so it's generated noise.
+nvim/lazyvim.json
