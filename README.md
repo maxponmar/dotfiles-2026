@@ -12,6 +12,7 @@ Personal development environment configuration files.
 | Claude Code | `claude/` | `settings.json` (Vim mode) and a custom `statusline.py` |
 | Kitty | `kitty/` | GPU terminal: Nerd Font + transparent background |
 | Alacritty | `alacritty/` | GPU terminal for Windows+WSL: Nerd Font, transparency, launches Ubuntu |
+| Windows Terminal | `windows-terminal/` | Native Windows terminal made vim/tmux-like (no tmux on Windows): Nerd Font + transparency |
 
 > Planned: Opencode configs
 
@@ -53,19 +54,33 @@ Useful flags:
 
 ### Native Windows 11 (PowerShell)
 
-For Windows **without** WSL, use `install.ps1` instead — it sets up only Neovim
-and Alacritty (no tmux on Windows). It winget-installs the dependencies, installs
-the **MesloLGS NF** font per-user (no admin), junctions the nvim config into
-`%LOCALAPPDATA%\nvim`, and deploys the PowerShell-shell Alacritty config
-(`alacritty/alacritty.windows.toml`) to `%APPDATA%\alacritty\`.
+For Windows **without** WSL, use `install.ps1` instead — it sets up Neovim,
+Alacritty, and Windows Terminal (no tmux on Windows, so Windows Terminal is
+configured vim/tmux-like). It winget-installs the dependencies, installs the
+**MesloLGS NF** font per-user (no admin), junctions the nvim config into
+`%LOCALAPPDATA%\nvim`, deploys the PowerShell-shell Alacritty config
+(`alacritty/alacritty.windows.toml`) to `%APPDATA%\alacritty\`, and deploys the
+Windows Terminal config (`windows-terminal/settings.json`) to the Terminal's
+`LocalState`.
+
+Run it with **no switch** for an interactive menu that lets you pick exactly
+which components to set up (and whether to install deps / dry-run) — so you can
+re-run just one piece, e.g. only Windows Terminal, without redoing everything.
+Pass a component switch (or `-All`) to skip the menu for scripted runs.
 
 ```powershell
 git clone <repo-url> $HOME\dotfiles
 cd $HOME\dotfiles
-.\install.ps1                 # Neovim + Alacritty
-.\install.ps1 -Alacritty      # just Alacritty
-.\install.ps1 -DryRun         # show what would happen, change nothing
+.\install.ps1                    # interactive menu: pick components + options
+.\install.ps1 -All               # everything, no menu
+.\install.ps1 -Alacritty         # just Alacritty
+.\install.ps1 -WindowsTerminal   # just Windows Terminal
+.\install.ps1 -DryRun            # show what would happen, change nothing
 ```
+
+Windows Terminal has no tmux-style prefix, so the bindings are direct `Alt`
+combos (`Alt+h/j/k/l` to move between panes, `Alt+v`/`Alt+s` to split,
+`Alt+1`-`9` for tabs). See the [Windows Terminal Cheatsheet](windows-terminal-cheatsheet.md).
 
 > The Windows + WSL setup is different: there, run `install.sh` **inside WSL** —
 > it copies the WSL-flavored `alacritty/alacritty.toml` (which launches
@@ -220,6 +235,7 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
 - [Tmux Cheatsheet](tmux-cheatsheet.md) - Vim-like keybindings reference
 - [Neovim Cheatsheet](nvim-cheatsheet.md) - LazyVim keybindings for development
 - [Aliases Cheatsheet](aliases-cheatsheet.md) - Shell aliases for git, Claude Code, pnpm, .NET, Docker, tmux & nvim
+- [Windows Terminal Cheatsheet](windows-terminal-cheatsheet.md) - Vim/tmux-like keybindings for native Windows
 
 ## Claude Code
 

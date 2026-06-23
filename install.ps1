@@ -1,18 +1,23 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Dotfiles installer for native Windows 11 (PowerShell) - Neovim + Alacritty.
+  Dotfiles installer for native Windows 11 (PowerShell) - Neovim, Alacritty,
+  Windows Terminal.
 
 .DESCRIPTION
   The Windows counterpart to install.sh. Windows has no tmux and this machine
-  is used natively (not through WSL), so only the Neovim and Alacritty configs
-  are set up here. Dependencies are installed with winget (built into Win 11).
+  is used natively (not through WSL), so the Neovim, Alacritty, and Windows
+  Terminal configs are set up here (Windows Terminal is configured to behave
+  vim/tmux-like in lieu of tmux). Dependencies are installed with winget
+  (built into Win 11).
 
   What it does:
-    - winget-installs deps (Neovim, Alacritty, Git, PowerShell 7, ripgrep, fd, Node)
+    - winget-installs deps (Neovim, Alacritty, Windows Terminal, Git,
+      PowerShell 7, ripgrep, fd, Node)
     - installs the "MesloLGS NF" Nerd Font per-user (no admin needed)
     - links %LOCALAPPDATA%\nvim   -> <repo>\nvim   (directory junction, admin-free)
     - copies  %APPDATA%\alacritty\alacritty.toml <- <repo>\alacritty\alacritty.windows.toml
+    - copies  Windows Terminal settings.json <- <repo>\windows-terminal\settings.json
     - copies  %USERPROFILE%\.markdownlint-cli2.yaml (so nvim markdown linting works)
   Anything it would overwrite is moved to %USERPROFILE%\.dotfiles-backup\<timestamp>.
 
@@ -20,20 +25,32 @@
   Install/link only the Neovim config.
 .PARAMETER Alacritty
   Install/deploy only the Alacritty config.
+.PARAMETER WindowsTerminal
+  Install/deploy only the Windows Terminal config.
+.PARAMETER All
+  Run every component non-interactively (skips the selection menu).
 .PARAMETER NoDeps
   Only deploy configs; skip winget package and font installation.
 .PARAMETER DryRun
   Print what would happen without changing anything.
 
+.NOTES
+  Run with no component switch in an interactive session to get a menu that
+  lets you pick exactly what to set up (e.g. just Windows Terminal). Pass a
+  component switch (or -All) to skip the menu - handy for scripting.
+
 .EXAMPLE
-  .\install.ps1
+  .\install.ps1                 # interactive menu: pick components + options
+  .\install.ps1 -WindowsTerminal  # just Windows Terminal, no menu
   .\install.ps1 -Alacritty -NoDeps
-  .\install.ps1 -DryRun
+  .\install.ps1 -All -DryRun      # preview everything, change nothing
 #>
 [CmdletBinding()]
 param(
   [switch]$Nvim,
   [switch]$Alacritty,
+  [switch]$WindowsTerminal,
+  [switch]$All,
   [switch]$NoDeps,
   [switch]$DryRun
 )
@@ -41,8 +58,13 @@ param(
 $ErrorActionPreference = 'Stop'
 $RepoRoot = $PSScriptRoot
 
-# Default to all components when none is named.
-if (-not ($Nvim -or $Alacritty)) { $Nvim = $true; $Alacritty = $true }
+# Was a component named on the command line? (Determines menu vs. direct run.)
+$ComponentNamed = $Nvim -or $Alacritty -or $WindowsTerminal -or $All
+if ($All) { $Nvim = $true; $Alacritty = $true; $WindowsTerminal = $true }
+
+# Capture which params were passed explicitly. ($PSBoundParameters is per-scope,
+# so the menu function can't see the script's args without this.)
+$BoundParams = $PSBoundParameters
 
 # --- logging ---------------------------------------------------------------
 function Log  ($m) { Write-Host "==> $m" -ForegroundColor Cyan }
@@ -55,6 +77,48 @@ function Step([string]$desc, [scriptblock]$action) {
   if ($DryRun) { Write-Host "[dry-run] $desc" -ForegroundColor DarkGray; return }
   Write-Host "  -> $desc" -ForegroundColor DarkGray
   & $action
+}
+
+# --- interactive component selection ---------------------------------------
+# Shown when the script is run with no component switch in an interactive
+# session. Sets $script:Nvim/$Alacritty/$WindowsTerminal (and may toggle
+# $NoDeps/$DryRun) from the user's choices. Returns $false if they quit.
+function Invoke-ComponentMenu {
+  Write-Host ''
+  Log 'What do you want to set up?'
+  Write-Host '  1) Neovim'
+  Write-Host '  2) Alacritty'
+  Write-Host '  3) Windows Terminal'
+  Write-Host '  4) Everything'
+  Write-Host '  q) Quit'
+  $ans = Read-Host 'Enter numbers (comma-separated, e.g. 1,3) [default: 4]'
+  if ([string]::IsNullOrWhiteSpace($ans)) { $ans = '4' }
+  if ($ans -match '^\s*q') { return $false }
+
+  foreach ($tok in ($ans -split '[,\s]+')) {
+    switch ($tok.Trim()) {
+      '1' { $script:Nvim = $true }
+      '2' { $script:Alacritty = $true }
+      '3' { $script:WindowsTerminal = $true }
+      '4' { $script:Nvim = $true; $script:Alacritty = $true; $script:WindowsTerminal = $true }
+      ''  { }
+      default { Warn "ignoring unknown choice: $tok" }
+    }
+  }
+  if (-not ($script:Nvim -or $script:Alacritty -or $script:WindowsTerminal)) {
+    Warn 'nothing selected'; return $false
+  }
+
+  # Only prompt for toggles the user didn't already set on the command line.
+  if (-not $BoundParams.ContainsKey('NoDeps')) {
+    $d = Read-Host 'Install dependencies and the MesloLGS NF font? [Y/n]'
+    if ($d -match '^\s*n') { $script:NoDeps = $true }
+  }
+  if (-not $BoundParams.ContainsKey('DryRun')) {
+    $r = Read-Host 'Dry run (preview only, change nothing)? [y/N]'
+    if ($r -match '^\s*y') { $script:DryRun = $true }
+  }
+  return $true
 }
 
 # --- backup ----------------------------------------------------------------
@@ -145,6 +209,24 @@ function Copy-Config([string]$src, [string]$dst) {
   Ok "copied $dst"
 }
 
+# Resolve the Windows Terminal settings.json path. The Store/winget (MSIX)
+# build lives under LocalState\Packages; an unpackaged build uses a plain
+# LocalState dir. Prefer an existing file; otherwise default to the packaged
+# location (what winget installs).
+function Get-WTSettingsPath {
+  $candidates = @(
+    (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json'),
+    (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json'),
+    (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\settings.json')
+  )
+  foreach ($c in $candidates) { if (Test-Path -LiteralPath $c) { return $c } }
+  # Nothing installed yet: also probe for the package dir (created before the
+  # file exists), else fall back to the canonical Store path.
+  $pkgDir = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState'
+  if (Test-Path -LiteralPath $pkgDir) { return (Join-Path $pkgDir 'settings.json') }
+  return $candidates[0]
+}
+
 # --- components ------------------------------------------------------------
 function Component-Nvim {
   Log "Component: nvim"
@@ -164,16 +246,40 @@ function Component-Alacritty {
   Copy-Config (Join-Path $RepoRoot 'alacritty\alacritty.windows.toml') (Join-Path $env:APPDATA 'alacritty\alacritty.toml')
 }
 
+function Component-WindowsTerminal {
+  Log "Component: windows-terminal"
+  if (-not $NoDeps) {
+    Install-Deps @('Microsoft.WindowsTerminal','Microsoft.PowerShell')
+    Install-MesloNerdFont
+  }
+  # Windows Terminal regenerates its dynamic profiles on next launch, so
+  # overwriting settings.json is safe; the prior file is backed up first.
+  Copy-Config (Join-Path $RepoRoot 'windows-terminal\settings.json') (Get-WTSettingsPath)
+}
+
 # --- run -------------------------------------------------------------------
 Log "Windows dotfiles install  repo=$RepoRoot"
+
+# No component named: show the picker when interactive, else default to all
+# (so unattended/CI runs still install everything).
+if (-not $ComponentNamed) {
+  if ([Environment]::UserInteractive -and -not [Console]::IsInputRedirected) {
+    if (-not (Invoke-ComponentMenu)) { Log 'Nothing to do - exiting.'; exit 0 }
+  } else {
+    $Nvim = $true; $Alacritty = $true; $WindowsTerminal = $true
+  }
+}
+
 if ($DryRun) { Warn "DRY RUN - no changes will be made" }
 
-if ($Nvim)      { Component-Nvim }
-if ($Alacritty) { Component-Alacritty }
+if ($Nvim)            { Component-Nvim }
+if ($Alacritty)       { Component-Alacritty }
+if ($WindowsTerminal) { Component-WindowsTerminal }
 
 Write-Host ''
 Log 'Done. Next steps:'
 Write-Host '  - Open a NEW terminal so PATH picks up the new tools.'
-if ($Nvim)      { Write-Host '  - Launch nvim once to let Mason install LSP servers (:Mason). gopls needs Go, jdtls needs a JDK.' }
-if ($Alacritty) { Write-Host '  - Restart Alacritty; its font is set to "MesloLGS NF".' }
+if ($Nvim)            { Write-Host '  - Launch nvim once to let Mason install LSP servers (:Mason). gopls needs Go, jdtls needs a JDK.' }
+if ($Alacritty)       { Write-Host '  - Restart Alacritty; its font is set to "MesloLGS NF".' }
+if ($WindowsTerminal) { Write-Host '  - Restart Windows Terminal (or it hot-reloads on save); see windows-terminal-cheatsheet.md for the vim/tmux keys.' }
 Write-Host "  - Overwritten files were backed up to: $BackupRoot"

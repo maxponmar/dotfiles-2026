@@ -1,0 +1,112 @@
+// Windows Terminal configuration — native Windows 11.
+//
+// Windows has no tmux, so this config makes the built-in Windows Terminal feel
+// vim/tmux-like: hjkl pane navigation, vim-style splits, resize, zoom, and
+// tab (≈ tmux window) management — all from the keyboard. See
+// windows-terminal-cheatsheet.md for the full key map.
+//
+// Deployed by install.ps1 to the Windows Terminal settings.json
+// (%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\settings.json,
+// or the unpackaged %LOCALAPPDATA%\Microsoft\Windows Terminal\settings.json).
+// The existing file is backed up first. Windows Terminal regenerates its
+// dynamic profiles (PowerShell, cmd, WSL distros) on next launch, so an empty
+// profiles.list is fine — profiles.defaults below styles every one of them.
+//
+// settings.json is JSONC: comments are allowed. Windows Terminal hot-reloads
+// the file on save. Schema: https://aka.ms/terminal-profiles-schema
+// Actions reference: https://learn.microsoft.com/windows/terminal/customize-settings/actions
+//
+// NOTE: Windows Terminal has no tmux-style "prefix" chord (it only supports
+// single key chords), so these bindings are direct (Alt-based) rather than
+// "press prefix, then key". Alt+letter bindings shadow the shell's Meta keys —
+// intentional, the same way tmux's prefix consumes its key.
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+
+    // PowerShell 7 (pwsh) — installed by install.ps1. If pwsh isn't present,
+    // Windows Terminal falls back to its first generated profile.
+    "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+
+    "theme": "dark",
+    "copyOnSelect": false,
+    "copyFormatting": "none",
+    "tabWidthMode": "equal",
+    "useAcrylicInTabRow": true,
+
+    // --- Per-profile defaults — apply to every generated profile -------------
+    "profiles": {
+        "defaults": {
+            // MesloLGS NF is installed per-user by install.ps1 (same Nerd Font
+            // Powerlevel10k expects), so prompt glyphs render.
+            "font": {
+                "face": "MesloLGS NF",
+                "size": 12
+            },
+            // Transparency + blur (frosts the desktop behind the window, like
+            // the kitty/Alacritty configs). opacity is 0-100; 80 ≈ kitty 0.80.
+            // useAcrylic gives the blur; set it to false for plain see-through.
+            "opacity": 80,
+            "useAcrylic": true,
+            "padding": "8",
+            "cursorShape": "filledBox",
+            "scrollbarState": "visible",
+            "snapOnInput": true,
+            "antialiasingMode": "grayscale"
+        },
+        // Left empty on purpose: Windows Terminal auto-generates PowerShell,
+        // Command Prompt, and any WSL profiles, all styled by defaults above.
+        "list": []
+    },
+
+    // --- Keybindings — vim / tmux flavored -----------------------------------
+    "actions": [
+        // Pane focus — vim hjkl (≈ tmux prefix h/j/k/l)
+        { "command": { "action": "moveFocus", "direction": "left"  }, "keys": "alt+h" },
+        { "command": { "action": "moveFocus", "direction": "down"  }, "keys": "alt+j" },
+        { "command": { "action": "moveFocus", "direction": "up"    }, "keys": "alt+k" },
+        { "command": { "action": "moveFocus", "direction": "right" }, "keys": "alt+l" },
+
+        // Pane splits — tmux-style: v splits to the right, s splits below.
+        // splitMode "duplicate" keeps the current profile + working directory
+        // (like tmux's -c "#{pane_current_path}").
+        { "command": { "action": "splitPane", "split": "right", "splitMode": "duplicate" }, "keys": "alt+v" },
+        { "command": { "action": "splitPane", "split": "down",  "splitMode": "duplicate" }, "keys": "alt+s" },
+
+        // Pane resize — vim HJKL (≈ tmux prefix H/J/K/L)
+        { "command": { "action": "resizePane", "direction": "left"  }, "keys": "alt+shift+h" },
+        { "command": { "action": "resizePane", "direction": "down"  }, "keys": "alt+shift+j" },
+        { "command": { "action": "resizePane", "direction": "up"    }, "keys": "alt+shift+k" },
+        { "command": { "action": "resizePane", "direction": "right" }, "keys": "alt+shift+l" },
+
+        // Pane zoom (≈ tmux prefix z) and close (≈ tmux prefix Q / vim :q)
+        { "command": "togglePaneZoom", "keys": "alt+z" },
+        { "command": { "action": "closePane" }, "keys": "alt+shift+q" },
+
+        // Tabs ≈ tmux windows
+        { "command": { "action": "newTab" }, "keys": "alt+t" },   // ≈ tmux prefix t
+        { "command": "nextTab", "keys": "alt+n" },                 // ≈ tmux prefix n
+        { "command": "prevTab", "keys": "alt+p" },                 // ≈ tmux prefix p
+        { "command": { "action": "closeTab" }, "keys": "alt+shift+w" },
+
+        // Jump straight to a tab (≈ tmux prefix 0-9)
+        { "command": { "action": "switchToTab", "index": 0 }, "keys": "alt+1" },
+        { "command": { "action": "switchToTab", "index": 1 }, "keys": "alt+2" },
+        { "command": { "action": "switchToTab", "index": 2 }, "keys": "alt+3" },
+        { "command": { "action": "switchToTab", "index": 3 }, "keys": "alt+4" },
+        { "command": { "action": "switchToTab", "index": 4 }, "keys": "alt+5" },
+        { "command": { "action": "switchToTab", "index": 5 }, "keys": "alt+6" },
+        { "command": { "action": "switchToTab", "index": 6 }, "keys": "alt+7" },
+        { "command": { "action": "switchToTab", "index": 7 }, "keys": "alt+8" },
+        { "command": { "action": "switchToTab", "index": 8 }, "keys": "alt+9" },
+
+        // Search scrollback — closest WT analogue to tmux copy-mode search
+        { "command": "find", "keys": "alt+slash" },
+
+        // Open settings (≈ tmux prefix r; WT hot-reloads on save)
+        { "command": "openSettings", "keys": "alt+r" },
+
+        // Copy / paste — explicit so they survive default-binding changes
+        { "command": { "action": "copy", "singleLine": false }, "keys": "ctrl+shift+c" },
+        { "command": "paste", "keys": "ctrl+shift+v" }
+    ]
+}
