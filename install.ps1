@@ -297,7 +297,9 @@ function Component-Alacritty {
 function Component-WindowsTerminal {
   Log "Component: windows-terminal"
   if (-not $NoDeps) {
-    Install-Deps @('Microsoft.WindowsTerminal','Microsoft.PowerShell')
+    # No PowerShell 7 here: the default profile is Windows PowerShell (built into
+    # Windows). The Alacritty component still installs pwsh (its shell is pwsh.exe).
+    Install-Deps @('Microsoft.WindowsTerminal')
     Install-MesloNerdFont
   }
   # Windows Terminal regenerates its dynamic profiles on next launch, so
