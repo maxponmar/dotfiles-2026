@@ -32,4 +32,4 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
-export PATH=/Users/maximiliano/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
