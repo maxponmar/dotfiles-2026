@@ -30,3 +30,6 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 export PATH="$HOME/.local/bin:$PATH"
+
+# opencode
+export PATH=/Users/maximiliano/.opencode/bin:$PATH

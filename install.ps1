@@ -169,13 +169,29 @@ function Install-MesloNerdFont {
   )
   $fontDir = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts'
   $regKey  = 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
+
+  # Already fully installed? Skip entirely so we never touch the .ttf files,
+  # which a running terminal locks (re-downloading a locked font throws an
+  # IOException). Re-registration is harmless if the files exist.
+  $present = $files | Where-Object { Test-Path -LiteralPath (Join-Path $fontDir $_) }
+  if ($present.Count -eq $files.Count) { Ok "MesloLGS NF present (skipping)"; return }
+
   Step "install MesloLGS NF (per-user)" {
     New-Item -ItemType Directory -Force -Path $fontDir | Out-Null
     if (-not (Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
     foreach ($f in $files) {
       $dst = Join-Path $fontDir $f
-      $url = "$base/$([uri]::EscapeDataString($f))"
-      Invoke-WebRequest -Uri $url -OutFile $dst -UseBasicParsing
+      # Don't re-download an existing font file - it may be locked by a
+      # running terminal. Just ensure it's registered below.
+      if (-not (Test-Path -LiteralPath $dst)) {
+        $url = "$base/$([uri]::EscapeDataString($f))"
+        try {
+          Invoke-WebRequest -Uri $url -OutFile $dst -UseBasicParsing
+        } catch [System.IO.IOException] {
+          Warn "skipping $f (file is in use - close terminals using the font, or it's already installed)"
+          continue
+        }
+      }
       $name = [IO.Path]::GetFileNameWithoutExtension($f)   # e.g. "MesloLGS NF Regular"
       New-ItemProperty -Path $regKey -Name "$name (TrueType)" -Value $dst -PropertyType String -Force | Out-Null
     }
