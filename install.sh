@@ -145,6 +145,39 @@ component_nvim() {
   link_file "$DOTFILES/nvim" "$HOME/.config/nvim"
   link_file "$DOTFILES/markdownlint/.markdownlint-cli2.yaml" "$HOME/.markdownlint-cli2.yaml"
   if [ "$WITH_DEPS" -eq 1 ]; then bootstrap_nvim; fi
+  check_lang_toolchains
+  return 0
+}
+
+# Some LazyVim language extras need a compiler/runtime that Mason can't provide
+# itself (e.g. gopls is built with `go`, jdtls runs on a JDK). Mason "installs"
+# happen lazily on first nvim launch, so a missing toolchain shows up as a
+# confusing runtime error rather than an install failure. Probe the extras that
+# are actually enabled in lazy.lua and warn up front. Informational only.
+check_lang_toolchains() {
+  local lazy="$DOTFILES/nvim/lua/config/lazy.lua"
+  [ -f "$lazy" ] || return 0
+  local triple extra rest cmd label missing=0
+  # "extra-name|command-to-probe|how to install it"
+  for triple in \
+    "lang.go|go|Go — re-run with --with-go (or: brew install go)" \
+    "lang.cmake|cmake|CMake — install via your package manager (brew install cmake)" \
+    "lang.dotnet|dotnet|.NET SDK — re-run with --with-dotnet"; do
+    extra="${triple%%|*}"; rest="${triple#*|}"; cmd="${rest%%|*}"; label="${rest#*|}"
+    grep -E "extras\.$extra\"" "$lazy" | grep -qv '^[[:space:]]*--' || continue
+    command -v "$cmd" >/dev/null 2>&1 && continue
+    warn "nvim extra '$extra' enabled but '$cmd' not found — $label"
+    missing=1
+  done
+  # Java is special-cased: on macOS /usr/bin/java is a stub that satisfies
+  # 'command -v java' but has no runtime, so probe the runtime directly.
+  if grep -E 'extras\.lang\.java"' "$lazy" | grep -qv '^[[:space:]]*--'; then
+    if ! java -version >/dev/null 2>&1; then
+      warn "nvim extra 'lang.java' enabled but no working JDK — jdtls needs JDK 17+ (brew install --cask temurin)"
+      missing=1
+    fi
+  fi
+  [ "$missing" -eq 0 ] && ok "nvim language-extra toolchains look present"
   return 0
 }
 
