@@ -9,8 +9,10 @@
 // (%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\settings.json,
 // or the unpackaged %LOCALAPPDATA%\Microsoft\Windows Terminal\settings.json).
 // The existing file is backed up first. Windows Terminal regenerates its
-// dynamic profiles (PowerShell, cmd, WSL distros) on next launch, so an empty
-// profiles.list is fine — profiles.defaults below styles every one of them.
+// dynamic profiles (PowerShell, cmd, WSL distros) on next launch and
+// profiles.defaults below styles every one of them; profiles.list keeps two
+// explicit profiles (canonical GUIDs) so there is always a visible profile,
+// even on a hot-reload that doesn't re-run the generators (see the note there).
 //
 // settings.json is JSONC: comments are allowed. Windows Terminal hot-reloads
 // the file on save. Schema: https://aka.ms/terminal-profiles-schema
@@ -53,9 +55,27 @@
             "snapOnInput": true,
             "antialiasingMode": "grayscale"
         },
-        // Left empty on purpose: Windows Terminal auto-generates PowerShell,
-        // Command Prompt, and any WSL profiles, all styled by defaults above.
-        "list": []
+        // At least one explicit profile, so Windows Terminal ALWAYS has a
+        // visible profile — even on a hot-reload (e.g. when install.ps1
+        // overwrites this file while WT is open), where WT re-parses but does
+        // NOT re-run its dynamic profile generators. An empty list there yields
+        // zero profiles and the "all profiles were hidden" load error. These
+        // two use WT's canonical built-in GUIDs, so they MERGE with the
+        // auto-generated profiles instead of duplicating them; PowerShell 7
+        // (pwsh, the defaultProfile above) is still added by the generator and
+        // styled by profiles.defaults.
+        "list": [
+            {
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "name": "Windows PowerShell",
+                "commandline": "powershell.exe"
+            },
+            {
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "name": "Command Prompt",
+                "commandline": "cmd.exe"
+            }
+        ]
     },
 
     // --- Keybindings — vim / tmux flavored -----------------------------------
