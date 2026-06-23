@@ -36,7 +36,7 @@ pm_install() {
 # (e.g. python-venv is bundled outside Debian; xclip is pointless on macOS).
 pkg_translate() {
   case "$1" in
-    zsh|git|curl|tmux|ripgrep|unzip|luarocks|neovim)
+    zsh|git|curl|tmux|ripgrep|unzip|luarocks|neovim|kitty)
       printf '%s' "$1" ;;
     fontconfig)
       [ "$PM" = "brew" ] || printf 'fontconfig' ;;          # CoreText on macOS
@@ -248,6 +248,16 @@ install_fonts() {
   done
   if command -v fc-cache >/dev/null 2>&1; then run fc-cache -f "$dir" || true; fi
   ok "MesloLGS NF installed; set your terminal font to 'MesloLGS NF'"
+}
+
+# --- Kitty terminal ---------------------------------------------------------
+install_kitty() {
+  if command -v kitty >/dev/null 2>&1; then ok "kitty present"; return 0; fi
+  case "$PM" in
+    brew) run brew install --cask kitty || warn "kitty cask install failed" ;;
+    none) warn "no package manager detected — install kitty manually" ;;
+    *)    install_deps kitty ;;
+  esac
 }
 
 # --- Claude Code CLI --------------------------------------------------------

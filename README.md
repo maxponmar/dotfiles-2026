@@ -10,6 +10,7 @@ Personal development environment configuration files.
 | Tmux | `tmux/` | Terminal multiplexer with Vim-like keybindings |
 | Neovim | `nvim/` | LazyVim setup with LSP, DAP, and multi-language support |
 | Claude Code | `claude/` | `settings.json` (Vim mode) and a custom `statusline.py` |
+| Kitty | `kitty/` | GPU terminal: Nerd Font + transparent background |
 
 > Planned: Opencode configs
 
@@ -160,6 +161,8 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    mkdir -p ~/.claude
    ln -sf ~/repositories/dotfiles/claude/settings.json ~/.claude/settings.json
    ln -sf ~/repositories/dotfiles/markdownlint/.markdownlint-cli2.yaml ~/.markdownlint-cli2.yaml
+   mkdir -p ~/.config/kitty
+   ln -sf ~/repositories/dotfiles/kitty/kitty.conf ~/.config/kitty/kitty.conf
    ```
 
 9. **Configure Powerlevel10k** (optional, to customize):

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Dotfiles installer — zsh, tmux, Neovim, Claude Code, aliases.
+# Dotfiles installer — zsh, tmux, Neovim, Claude Code, Kitty, aliases.
 # Cross-platform: Linux, WSL2 (Windows), macOS. Auto-detects OS + package
 # manager. Backs up anything it would overwrite and records a manifest so the
 # install can be undone with ./uninstall.sh.
@@ -13,6 +13,7 @@
 #   --tmux       tmux, link .tmux.conf
 #   --nvim       Neovim (LazyVim) + tools, link ~/.config/nvim + markdownlint config
 #   --claude     Claude Code CLI, link ~/.claude/settings.json
+#   --kitty      Kitty terminal, link ~/.config/kitty/kitty.conf
 #   --aliases    just the shell aliases (source block in ~/.zshrc; implied by --zsh)
 #   --all        all of the above (default when no component is given)
 #
@@ -41,7 +42,7 @@ export PATH="$HOME/.local/bin:$PATH"
 usage() { sed -n '3,40p' "$0" | sed 's/^# \{0,1\}//'; }
 
 # --- defaults / flags -------------------------------------------------------
-DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_ALIASES=0
+DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_KITTY=0; DO_ALIASES=0
 WITH_DEPS=1; WITH_GO=0; WITH_DOTNET=0
 RESTORE=0; LIST=0; FORCE=0
 DRY_RUN="${DRY_RUN:-0}"
@@ -53,6 +54,7 @@ while [ $# -gt 0 ]; do
     --tmux)       DO_TMUX=1 ;;
     --nvim)       DO_NVIM=1 ;;
     --claude)     DO_CLAUDE=1 ;;
+    --kitty)      DO_KITTY=1 ;;
     --aliases)    DO_ALIASES=1 ;;
     --no-deps)    WITH_DEPS=0 ;;
     --deps)       WITH_DEPS=1 ;;
@@ -72,12 +74,12 @@ done
 export DRY_RUN FORCE
 
 # default to everything if no component and not a maintenance action
-if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_ALIASES" = "000000" ] \
+if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_KITTY$DO_ALIASES" = "0000000" ] \
    && [ "$RESTORE" -eq 0 ] && [ "$LIST" -eq 0 ]; then
   DO_ALL=1
 fi
 if [ "$DO_ALL" -eq 1 ]; then
-  DO_ZSH=1; DO_TMUX=1; DO_NVIM=1; DO_CLAUDE=1
+  DO_ZSH=1; DO_TMUX=1; DO_NVIM=1; DO_CLAUDE=1; DO_KITTY=1
 fi
 
 common_init
@@ -157,6 +159,16 @@ component_claude() {
   return 0
 }
 
+component_kitty() {
+  log "Component: ${C_BOLD}kitty${C_RESET}"
+  if [ "$WITH_DEPS" -eq 1 ]; then
+    install_kitty
+    install_fonts   # kitty.conf uses MesloLGS Nerd Font
+  fi
+  link_file "$DOTFILES/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+  return 0
+}
+
 component_aliases() {
   # Standalone aliases only make sense without the full zsh config; with --zsh
   # the symlinked ~/.zshrc already sources them.
@@ -183,6 +195,7 @@ if [ "$DO_ZSH" -eq 1 ];     then component_zsh;     fi
 if [ "$DO_TMUX" -eq 1 ];    then component_tmux;    fi
 if [ "$DO_NVIM" -eq 1 ];    then component_nvim;    fi
 if [ "$DO_CLAUDE" -eq 1 ];  then component_claude;  fi
+if [ "$DO_KITTY" -eq 1 ];   then component_kitty;   fi
 if [ "$DO_ALIASES" -eq 1 ]; then component_aliases; fi
 
 # --- summary ----------------------------------------------------------------
@@ -196,4 +209,5 @@ elif [ "$DO_ZSH" -eq 1 ]; then
 fi
 if [ "$DO_NVIM" -eq 1 ];   then printf '  - Open nvim once to let Mason finish installing LSP servers (:Mason).\n'; fi
 if [ "$DO_CLAUDE" -eq 1 ]; then printf '  - Run "claude" to start Claude Code (config is symlinked).\n'; fi
+if [ "$DO_KITTY" -eq 1 ];  then printf '  - Restart Kitty (or ctrl+shift+f5) to load kitty.conf.\n'; fi
 printf '  - To undo this install: %s./uninstall.sh%s (backups are in ~/.dotfiles-backup).\n' "$C_BOLD" "$C_RESET"
