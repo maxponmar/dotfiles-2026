@@ -81,6 +81,10 @@ detect_sudo() {
 # Validate/refresh sudo once, up front. Leave \$SUDO UNQUOTED at call sites so
 # an empty value (root) disappears instead of becoming an empty argv[0].
 ensure_sudo() {
+  # Homebrew always runs unprivileged, so $SUDO is never used on macOS. Calling
+  # 'sudo -v' there would force an interactive password prompt for nothing and
+  # abort non-interactive runs (no TTY) — skip it entirely when PM=brew.
+  [ "${PM:-}" = "brew" ] && return 0
   if [ -n "$SUDO" ] && [ "$DRY_RUN" -eq 0 ]; then
     sudo -v || die "sudo authentication failed."
   fi
