@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal dotfiles for a WSL2/Linux dev environment. There is no build, lint, or test step — changes are validated by reloading the relevant tool. The repo is consumed by **symlinking** files into their expected locations (see README.md step 8); editing a file here changes the live config once symlinks are in place.
 
-`install.sh` automates setup cross-platform (Linux / WSL2 / macOS): it detects the OS + package manager (apt/dnf/pacman/zypper/brew), installs deps, sets up the tooling, and creates the symlinks below — backing up anything it displaces to `~/.dotfiles-backup/<timestamp>/` with a TSV manifest. `uninstall.sh` reverses a run from that manifest. Supports partial installs (`--zsh/--tmux/--nvim/--claude/--kitty/--aliases`), `--no-deps`, `--dry-run`, and `--restore`. Implementation: `scripts/lib/common.sh` (logging, OS detect, backup/manifest, idempotent `link_file`, restore) and `scripts/lib/packages.sh` (package-manager abstraction + tooling installers). **Scripts must stay bash 3.2 compatible** (macOS ships bash 3.2): no associative arrays, `mapfile`, `${v,,}`/`${v^^}`, negative array indices, or GNU-only flags (`readlink -f`, `tac`, in-place `sed -i`, getopt long options).
+`install.sh` automates setup cross-platform (Linux / WSL2 / macOS): it detects the OS + package manager (apt/dnf/pacman/zypper/brew), installs deps, sets up the tooling, and creates the symlinks below — backing up anything it displaces to `~/.dotfiles-backup/<timestamp>/` with a TSV manifest. `uninstall.sh` reverses a run from that manifest. Supports partial installs (`--zsh/--tmux/--nvim/--claude/--kitty/--alacritty/--aliases`), `--no-deps`, `--dry-run`, and `--restore`. Implementation: `scripts/lib/common.sh` (logging, OS detect, backup/manifest, idempotent `link_file`, `copy_file` for targets that can't be symlinked + matching `restore_copy`, restore) and `scripts/lib/packages.sh` (package-manager abstraction + tooling installers). The Alacritty component is the one consumer of `copy_file`: on WSL the native Windows Alacritty can't follow a WSL symlink, so its config is *copied* into Windows `%APPDATA%` (manifest action `copy`, reversed by `restore_copy`); `win_appdata_path` in `packages.sh` resolves that location via `cmd.exe`/`wslpath`. **Scripts must stay bash 3.2 compatible** (macOS ships bash 3.2): no associative arrays, `mapfile`, `${v,,}`/`${v^^}`, negative array indices, or GNU-only flags (`readlink -f`, `tac`, in-place `sed -i`, getopt long options).
 
 | Tool | Source | Symlink target |
 |------|--------|----------------|
@@ -15,6 +15,7 @@ Personal dotfiles for a WSL2/Linux dev environment. There is no build, lint, or 
 | Neovim | `nvim/` (whole dir) | `~/.config/nvim` |
 | Claude Code | `claude/settings.json` | `~/.claude/settings.json` |
 | Kitty | `kitty/kitty.conf` | `~/.config/kitty/kitty.conf` |
+| Alacritty | `alacritty/alacritty.toml` | WSL: **copied** to Windows `%APPDATA%\alacritty\alacritty.toml`; native Linux: symlinked to `~/.config/alacritty/alacritty.toml` (skipped on macOS) |
 | markdownlint | `markdownlint/.markdownlint-cli2.yaml` | `~/.markdownlint-cli2.yaml` |
 
 `claude/statusline.py` is referenced by absolute path from `settings.json` (not symlinked); `settings.json`'s `statusLine.command` invokes it via `python3`.

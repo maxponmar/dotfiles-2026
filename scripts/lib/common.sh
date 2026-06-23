@@ -165,6 +165,24 @@ link_file() {
   ok "linked $dest -> ${C_DIM}$src${C_RESET}"
 }
 
+# --- copy (for targets we can't symlink into) ------------------------------
+# copy_file SRC DEST: ensure DEST is a copy of SRC, backing up whatever was
+# there. Needed for the Windows filesystem from WSL — NTFS won't follow a Linux
+# symlink — so the Alacritty config is copied, not linked. Always overwrites so
+# re-runs pick up edits made in the repo. Recorded as a 'copy' manifest action.
+copy_file() {
+  local src="$1" dest="$2" bak="-"
+  if [ ! -e "$src" ]; then
+    warn "source missing, skipping copy: $src"
+    return 0
+  fi
+  run mkdir -p "$(dirname "$dest")"
+  backup_if_exists "$dest"; bak="$BAK_RESULT"
+  run cp "$src" "$dest"
+  manifest_append copy "$dest" "$bak" yes
+  ok "copied $dest <- ${C_DIM}$src${C_RESET}"
+}
+
 # --- canonical-path safety net ---------------------------------------------
 # zsh/.zshrc sources $HOME/repositories/dotfiles/zsh/aliases.zsh and
 # claude/settings.json references $HOME/repositories/dotfiles/claude/statusline.py
@@ -283,6 +301,26 @@ restore_link() {
   fi
 }
 
+restore_copy() {
+  # Reverse a copy_file: the destination is a real file we wrote (often on the
+  # Windows filesystem), so remove it, then move any backup back into place.
+  local dest="$1" backup="$2"
+  if [ -L "$dest" ]; then
+    warn "skip (now a symlink, not our copy): $dest"; return 0
+  elif [ -e "$dest" ]; then
+    run rm -f "$dest"; ok "removed copied file: $dest"
+  fi
+  if [ -n "$backup" ] && [ -e "$backup" ]; then
+    if [ -e "$dest" ]; then
+      warn "skip restore of backup (destination still occupied): $dest"
+    else
+      run mkdir -p "$(dirname "$dest")"
+      run mv "$backup" "$dest"
+      ok "restored backup -> $dest"
+    fi
+  fi
+}
+
 restore_block() {
   local file="$1" created="${2:-no}"
   [ -f "$file" ] || return 0
@@ -326,6 +364,7 @@ do_restore() {
     [ "$backup" = "-" ] && backup=""
     case "$action" in
       link)  restore_link "$dest" "$backup" ;;
+      copy)  restore_copy "$dest" "$backup" ;;
       block) restore_block "$dest" "$created" ;;
       *)     warn "unknown manifest action '$action' for $dest (skipping)" ;;
     esac

@@ -11,6 +11,7 @@ Personal development environment configuration files.
 | Neovim | `nvim/` | LazyVim setup with LSP, DAP, and multi-language support |
 | Claude Code | `claude/` | `settings.json` (Vim mode) and a custom `statusline.py` |
 | Kitty | `kitty/` | GPU terminal: Nerd Font + transparent background |
+| Alacritty | `alacritty/` | GPU terminal for Windows+WSL: Nerd Font, transparency, launches Ubuntu |
 
 > Planned: Opencode configs
 
@@ -164,6 +165,15 @@ sudo apt-get install -y golang-go dotnet-sdk-10.0
    mkdir -p ~/.config/kitty
    ln -sf ~/repositories/dotfiles/kitty/kitty.conf ~/.config/kitty/kitty.conf
    ```
+
+   **Alacritty (Windows + WSL):** Alacritty is a native Windows app, so it can't
+   read a config symlinked inside WSL. `./install.sh --alacritty` (run in WSL)
+   copies `alacritty/alacritty.toml` to `%APPDATA%\alacritty\alacritty.toml` on
+   Windows and sets Ubuntu as the default WSL distro. To do it by hand, copy that
+   file to `%APPDATA%\alacritty\` on Windows. Install the **MesloLGS NF** font on
+   Windows (see step 11 / the WSL font notes) — fonts inside WSL don't count.
+   Because it's a copy (not a symlink), re-run `./install.sh --alacritty` after
+   editing the repo file to push the change.
 
 9. **Configure Powerlevel10k** (optional, to customize):
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Dotfiles installer — zsh, tmux, Neovim, Claude Code, Kitty, aliases.
+# Dotfiles installer — zsh, tmux, Neovim, Claude Code, Kitty, Alacritty, aliases.
 # Cross-platform: Linux, WSL2 (Windows), macOS. Auto-detects OS + package
 # manager. Backs up anything it would overwrite and records a manifest so the
 # install can be undone with ./uninstall.sh.
@@ -14,6 +14,7 @@
 #   --nvim       Neovim (LazyVim) + tools, link ~/.config/nvim + markdownlint config
 #   --claude     Claude Code CLI, link ~/.claude/settings.json
 #   --kitty      Kitty terminal, link ~/.config/kitty/kitty.conf
+#   --alacritty  Alacritty (Windows+WSL): copy config to Windows %APPDATA%, default distro Ubuntu
 #   --aliases    just the shell aliases (source block in ~/.zshrc; implied by --zsh)
 #   --all        all of the above (default when no component is given)
 #
@@ -42,7 +43,7 @@ export PATH="$HOME/.local/bin:$PATH"
 usage() { sed -n '3,40p' "$0" | sed 's/^# \{0,1\}//'; }
 
 # --- defaults / flags -------------------------------------------------------
-DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_KITTY=0; DO_ALIASES=0
+DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_KITTY=0; DO_ALACRITTY=0; DO_ALIASES=0
 WITH_DEPS=1; WITH_GO=0; WITH_DOTNET=0
 RESTORE=0; LIST=0; FORCE=0
 DRY_RUN="${DRY_RUN:-0}"
@@ -55,6 +56,7 @@ while [ $# -gt 0 ]; do
     --nvim)       DO_NVIM=1 ;;
     --claude)     DO_CLAUDE=1 ;;
     --kitty)      DO_KITTY=1 ;;
+    --alacritty)  DO_ALACRITTY=1 ;;
     --aliases)    DO_ALIASES=1 ;;
     --no-deps)    WITH_DEPS=0 ;;
     --deps)       WITH_DEPS=1 ;;
@@ -74,12 +76,12 @@ done
 export DRY_RUN FORCE
 
 # default to everything if no component and not a maintenance action
-if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_KITTY$DO_ALIASES" = "0000000" ] \
+if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_KITTY$DO_ALACRITTY$DO_ALIASES" = "00000000" ] \
    && [ "$RESTORE" -eq 0 ] && [ "$LIST" -eq 0 ]; then
   DO_ALL=1
 fi
 if [ "$DO_ALL" -eq 1 ]; then
-  DO_ZSH=1; DO_TMUX=1; DO_NVIM=1; DO_CLAUDE=1; DO_KITTY=1
+  DO_ZSH=1; DO_TMUX=1; DO_NVIM=1; DO_CLAUDE=1; DO_KITTY=1; DO_ALACRITTY=1
 fi
 
 common_init
@@ -202,6 +204,40 @@ component_kitty() {
   return 0
 }
 
+component_alacritty() {
+  log "Component: ${C_BOLD}alacritty${C_RESET}"
+  local src="$DOTFILES/alacritty/alacritty.toml"
+  if [ "$OS" = "wsl" ]; then
+    # Alacritty is a native Windows app here, so its config lives on the Windows
+    # side. Copy (not symlink — NTFS can't follow a WSL link) into %APPDATA%.
+    local appdata
+    appdata="$(win_appdata_path)"
+    if [ -n "$appdata" ]; then
+      copy_file "$src" "$appdata/alacritty/alacritty.toml"
+    else
+      warn "Could not locate Windows %APPDATA%."
+      warn "Copy $src to %APPDATA%\\alacritty\\alacritty.toml on Windows yourself."
+    fi
+    [ "$WITH_DEPS" -eq 1 ] && print_wsl_font_instructions
+    # Make Ubuntu the default WSL distro so plain `wsl` (and the Alacritty shell) use it.
+    if command -v wsl.exe >/dev/null 2>&1; then
+      log "Setting Ubuntu as the default WSL distro"
+      run wsl.exe --set-default Ubuntu \
+        || warn "Could not set default WSL distro to 'Ubuntu' (check the name with: wsl.exe -l -v)"
+    fi
+    return 0
+  fi
+  if [ "$OS" = "macos" ]; then
+    warn "alacritty: skipping on macOS — this config targets Windows+WSL (its shell is wsl.exe)."
+    return 0
+  fi
+  # Native Linux: install + symlink, but the wsl.exe shell line won't apply here.
+  if [ "$WITH_DEPS" -eq 1 ]; then install_alacritty; install_fonts; fi
+  link_file "$src" "$HOME/.config/alacritty/alacritty.toml"
+  warn "alacritty.toml sets [terminal.shell] to wsl.exe (for Windows). On native Linux, edit that out."
+  return 0
+}
+
 component_aliases() {
   # Standalone aliases only make sense without the full zsh config; with --zsh
   # the symlinked ~/.zshrc already sources them.
@@ -229,6 +265,7 @@ if [ "$DO_TMUX" -eq 1 ];    then component_tmux;    fi
 if [ "$DO_NVIM" -eq 1 ];    then component_nvim;    fi
 if [ "$DO_CLAUDE" -eq 1 ];  then component_claude;  fi
 if [ "$DO_KITTY" -eq 1 ];   then component_kitty;   fi
+if [ "$DO_ALACRITTY" -eq 1 ]; then component_alacritty; fi
 if [ "$DO_ALIASES" -eq 1 ]; then component_aliases; fi
 
 # --- summary ----------------------------------------------------------------
@@ -243,4 +280,5 @@ fi
 if [ "$DO_NVIM" -eq 1 ];   then printf '  - Open nvim once to let Mason finish installing LSP servers (:Mason).\n'; fi
 if [ "$DO_CLAUDE" -eq 1 ]; then printf '  - Run "claude" to start Claude Code (config is symlinked).\n'; fi
 if [ "$DO_KITTY" -eq 1 ];  then printf '  - Restart Kitty (or ctrl+shift+f5) to load kitty.conf.\n'; fi
+if [ "$DO_ALACRITTY" -eq 1 ] && [ "$OS" = "wsl" ]; then printf '  - Alacritty: install "MesloLGS NF" on Windows (links above), then restart Alacritty.\n'; fi
 printf '  - To undo this install: %s./uninstall.sh%s (backups are in ~/.dotfiles-backup).\n' "$C_BOLD" "$C_RESET"

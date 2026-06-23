@@ -1,0 +1,38 @@
+# Alacritty configuration — used on Windows with WSL (Ubuntu).
+#
+# Alacritty on Windows reads this from %APPDATA%\alacritty\alacritty.toml.
+# Because Alacritty here is a native Windows app, install.sh (when run inside
+# WSL) COPIES this file into that Windows location — a WSL symlink can't be
+# followed from the Windows filesystem. So: edit this file in the repo and
+# re-run `./install.sh --alacritty` to push the change to Windows.
+#
+# Config format is TOML. Reference: https://alacritty.org/config-alacritty.html
+
+# Launch WSL with the Ubuntu distro by default, starting in the Linux $HOME.
+# `wsl.exe ~ -d Ubuntu` => distro "Ubuntu", working dir = home. install.sh also
+# runs `wsl --set-default Ubuntu` so plain `wsl` picks Ubuntu too.
+[terminal.shell]
+program = "wsl.exe"
+args = ["~", "-d", "Ubuntu"]
+
+[font]
+size = 12.0
+# Install "MesloLGS NF" on WINDOWS (install.sh prints the download links for
+# WSL). It is the same Nerd Font Powerlevel10k expects, so prompt glyphs render.
+normal      = { family = "MesloLGS NF", style = "Regular" }
+bold        = { family = "MesloLGS NF", style = "Bold" }
+italic      = { family = "MesloLGS NF", style = "Italic" }
+bold_italic = { family = "MesloLGS NF", style = "Bold Italic" }
+
+[window]
+# 1.0 = opaque, 0.0 = fully transparent (matches the kitty config's 0.90).
+opacity = 0.90
+padding = { x = 6, y = 6 }
+dynamic_padding = true
+dynamic_title = true
+
+[scrolling]
+history = 10000
+
+[cursor]
+style = { shape = "Block", blinking = "On" }

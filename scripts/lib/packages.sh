@@ -36,7 +36,7 @@ pm_install() {
 # (e.g. python-venv is bundled outside Debian; xclip is pointless on macOS).
 pkg_translate() {
   case "$1" in
-    zsh|git|curl|tmux|ripgrep|unzip|luarocks|neovim|kitty)
+    zsh|git|curl|tmux|ripgrep|unzip|luarocks|neovim|kitty|alacritty)
       printf '%s' "$1" ;;
     fontconfig)
       [ "$PM" = "brew" ] || printf 'fontconfig' ;;          # CoreText on macOS
@@ -258,6 +258,30 @@ install_kitty() {
     none) warn "no package manager detected — install kitty manually" ;;
     *)    install_deps kitty ;;
   esac
+}
+
+# --- Alacritty terminal -----------------------------------------------------
+install_alacritty() {
+  if command -v alacritty >/dev/null 2>&1; then ok "alacritty present"; return 0; fi
+  case "$PM" in
+    brew) run brew install --cask alacritty || warn "alacritty cask install failed" ;;
+    none) warn "no package manager detected — install alacritty manually" ;;
+    *)    install_deps alacritty ;;
+  esac
+}
+
+# Echo the WSL path to the Windows %APPDATA% directory (where the native Windows
+# Alacritty reads its config), or nothing if it can't be determined. cmd.exe is
+# run from a Windows-accessible cwd to avoid the "UNC paths are not supported"
+# warning that fires when the cwd is a Linux path.
+win_appdata_path() {
+  command -v wslpath >/dev/null 2>&1 || return 0
+  local win wslp
+  win="$( (cd /mnt/c 2>/dev/null && cmd.exe /c "echo %APPDATA%") 2>/dev/null | tr -d '\r' )"
+  [ -n "$win" ] || return 0
+  case "$win" in *%APPDATA%*) return 0 ;; esac   # variable didn't expand
+  wslp="$(wslpath -u "$win" 2>/dev/null)" || return 0
+  printf '%s\n' "$wslp"
 }
 
 # --- Claude Code CLI --------------------------------------------------------
