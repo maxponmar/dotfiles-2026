@@ -15,6 +15,7 @@
       }
     }
   },
+  "includeCoAuthoredBy": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "editorMode": "vim",
