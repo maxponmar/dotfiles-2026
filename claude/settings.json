@@ -4,7 +4,19 @@
     "command": "python3 $HOME/repositories/dotfiles/claude/statusline.py",
     "padding": 1
   },
+  "enabledPlugins": {
+    "engram@engram": true
+  },
+  "extraKnownMarketplaces": {
+    "engram": {
+      "source": {
+        "source": "github",
+        "repo": "Gentleman-Programming/engram"
+      }
+    }
+  },
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "editorMode": "vim",
-  "skipDangerousModePermissionPrompt": true
+  "tui": "fullscreen"
 }
