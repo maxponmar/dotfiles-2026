@@ -14,7 +14,8 @@ Personal development environment configuration files.
 | Alacritty | `alacritty/` | GPU terminal for Windows+WSL: Nerd Font, transparency, launches Ubuntu |
 | Windows Terminal | `windows-terminal/` | Native Windows terminal made vim/tmux-like (no tmux on Windows): Nerd Font + transparency |
 
-> Planned: Opencode configs
+> Opencode: `zsh/.zshrc` adds `~/.opencode/bin` to `PATH`. Dedicated Opencode
+> configs are still planned.
 
 ## Quick Start
 
