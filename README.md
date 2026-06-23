@@ -37,6 +37,7 @@ Partial installs — pick only what you want:
 ./install.sh --nvim --tmux   # just Neovim + tmux
 ./install.sh --zsh           # shell only (zsh + p10k + plugins + aliases)
 ./install.sh --claude        # Claude Code only
+./install.sh --alacritty     # Alacritty config (WSL: copied to Windows %APPDATA%)
 ./install.sh --aliases       # add the aliases to your existing shell, nothing else
 ```
 
@@ -46,8 +47,29 @@ Useful flags:
 ./install.sh --dry-run       # show what would happen, change nothing
 ./install.sh --no-deps       # only create symlinks, skip installing packages
 ./install.sh --with-go --with-dotnet   # also install the Go / .NET LSP toolchains
+./install.sh --alacritty --wsl-distro Debian   # Alacritty launches/defaults a non-Ubuntu distro
 ./install.sh --help          # full usage
 ```
+
+### Native Windows 11 (PowerShell)
+
+For Windows **without** WSL, use `install.ps1` instead — it sets up only Neovim
+and Alacritty (no tmux on Windows). It winget-installs the dependencies, installs
+the **MesloLGS NF** font per-user (no admin), junctions the nvim config into
+`%LOCALAPPDATA%\nvim`, and deploys the PowerShell-shell Alacritty config
+(`alacritty/alacritty.windows.toml`) to `%APPDATA%\alacritty\`.
+
+```powershell
+git clone <repo-url> $HOME\dotfiles
+cd $HOME\dotfiles
+.\install.ps1                 # Neovim + Alacritty
+.\install.ps1 -Alacritty      # just Alacritty
+.\install.ps1 -DryRun         # show what would happen, change nothing
+```
+
+> The Windows + WSL setup is different: there, run `install.sh` **inside WSL** —
+> it copies the WSL-flavored `alacritty/alacritty.toml` (which launches
+> `wsl.exe`) into Windows `%APPDATA%`. `install.ps1` is only for native Windows.
 
 **Undo / restore.** Every run saves displaced files under
 `~/.dotfiles-backup/<timestamp>/` and records a manifest. To revert:

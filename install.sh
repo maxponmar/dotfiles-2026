@@ -22,6 +22,7 @@
 #   --no-deps    only create symlinks; skip installing packages/tools
 #   --with-go    also install the Go toolchain (for the gopls LSP)
 #   --with-dotnet  also install the .NET SDK (for C#/F# LSPs)
+#   --wsl-distro <name>  WSL distro Alacritty launches / sets default (default: Ubuntu)
 #   --dry-run    print what would happen without changing anything
 #   --restore    undo the most recent install (same as ./uninstall.sh)
 #   --list-backups   show available backups and exit
@@ -40,12 +41,15 @@ export DOTFILES="$SCRIPT_DIR"
 # user-space binaries (fd shim, neovim tarball, claude) land here
 export PATH="$HOME/.local/bin:$PATH"
 
-usage() { sed -n '3,40p' "$0" | sed 's/^# \{0,1\}//'; }
+# Print the leading comment block (from line 3 to the first non-comment line),
+# stripping the leading "# ". Resilient to the header growing/shrinking.
+usage() { awk 'NR>=3 { if (/^#/) { sub(/^# ?/,""); print; next } else exit }' "$0"; }
 
 # --- defaults / flags -------------------------------------------------------
 DO_ALL=0; DO_ZSH=0; DO_TMUX=0; DO_NVIM=0; DO_CLAUDE=0; DO_KITTY=0; DO_ALACRITTY=0; DO_ALIASES=0
 WITH_DEPS=1; WITH_GO=0; WITH_DOTNET=0
 RESTORE=0; LIST=0; FORCE=0
+WSL_DISTRO="Ubuntu"   # which WSL distro Alacritty launches / is set as default
 DRY_RUN="${DRY_RUN:-0}"
 
 while [ $# -gt 0 ]; do
@@ -62,6 +66,7 @@ while [ $# -gt 0 ]; do
     --deps)       WITH_DEPS=1 ;;
     --with-go)    WITH_GO=1 ;;
     --with-dotnet) WITH_DOTNET=1 ;;
+    --wsl-distro) shift; WSL_DISTRO="${1:-}"; [ -n "$WSL_DISTRO" ] || { err "--wsl-distro needs a name"; exit 2; } ;;
     --dry-run)    DRY_RUN=1 ;;
     --restore)    RESTORE=1 ;;
     --force)      FORCE=1 ;;
@@ -73,7 +78,7 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-export DRY_RUN FORCE
+export DRY_RUN FORCE WSL_DISTRO
 
 # default to everything if no component and not a maintenance action
 if [ "$DO_ALL$DO_ZSH$DO_TMUX$DO_NVIM$DO_CLAUDE$DO_KITTY$DO_ALACRITTY$DO_ALIASES" = "00000000" ] \
@@ -209,21 +214,23 @@ component_alacritty() {
   local src="$DOTFILES/alacritty/alacritty.toml"
   if [ "$OS" = "wsl" ]; then
     # Alacritty is a native Windows app here, so its config lives on the Windows
-    # side. Copy (not symlink — NTFS can't follow a WSL link) into %APPDATA%.
-    local appdata
+    # side. Copy (not symlink — NTFS can't follow a WSL link) into %APPDATA%,
+    # substituting the chosen WSL distro into the shell args first.
+    local appdata rendered="$TMPDIR_WORK/alacritty.toml"
+    sed 's/-d", "Ubuntu"/-d", "'"$WSL_DISTRO"'"/' "$src" > "$rendered"
     appdata="$(win_appdata_path)"
     if [ -n "$appdata" ]; then
-      copy_file "$src" "$appdata/alacritty/alacritty.toml"
+      copy_file "$rendered" "$appdata/alacritty/alacritty.toml"
     else
       warn "Could not locate Windows %APPDATA%."
-      warn "Copy $src to %APPDATA%\\alacritty\\alacritty.toml on Windows yourself."
+      warn "Copy $src to %APPDATA%\\alacritty\\alacritty.toml on Windows yourself (set the distro to '$WSL_DISTRO')."
     fi
     [ "$WITH_DEPS" -eq 1 ] && print_wsl_font_instructions
-    # Make Ubuntu the default WSL distro so plain `wsl` (and the Alacritty shell) use it.
+    # Make the chosen distro the default so plain `wsl` (and Alacritty) use it.
     if command -v wsl.exe >/dev/null 2>&1; then
-      log "Setting Ubuntu as the default WSL distro"
-      run wsl.exe --set-default Ubuntu \
-        || warn "Could not set default WSL distro to 'Ubuntu' (check the name with: wsl.exe -l -v)"
+      log "Setting '$WSL_DISTRO' as the default WSL distro"
+      run wsl.exe --set-default "$WSL_DISTRO" \
+        || warn "Could not set default WSL distro to '$WSL_DISTRO' (check the name with: wsl.exe -l -v)"
     fi
     return 0
   fi

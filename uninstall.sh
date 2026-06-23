@@ -22,7 +22,7 @@ export DOTFILES="$SCRIPT_DIR"
 # shellcheck source=scripts/lib/common.sh
 . "$SCRIPT_DIR/scripts/lib/common.sh"
 
-usage() { sed -n '3,18p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { awk 'NR>=3 { if (/^#/) { sub(/^# ?/,""); print; next } else exit }' "$0"; }
 
 FROM=""; FORCE=0; LIST=0
 DRY_RUN="${DRY_RUN:-0}"

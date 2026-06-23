@@ -1,0 +1,35 @@
+# Alacritty configuration — native Windows 11 (PowerShell).
+#
+# Deployed by install.ps1 to %APPDATA%\alacritty\alacritty.toml. This is the
+# non-WSL variant: it launches PowerShell directly instead of wsl.exe. Use
+# alacritty.toml (the sibling file) for the Windows + WSL setup.
+#
+# Config format is TOML. Reference: https://alacritty.org/config-alacritty.html
+
+# PowerShell 7 (pwsh.exe) — install.ps1 installs it. Swap to "powershell.exe"
+# for the built-in Windows PowerShell 5.1 if you prefer.
+[terminal.shell]
+program = "pwsh.exe"
+args = ["-NoLogo"]
+
+[font]
+size = 12.0
+# Install "MesloLGS NF" on Windows (install.ps1 does this). Same Nerd Font
+# Powerlevel10k expects, so prompt glyphs render.
+normal      = { family = "MesloLGS NF", style = "Regular" }
+bold        = { family = "MesloLGS NF", style = "Bold" }
+italic      = { family = "MesloLGS NF", style = "Italic" }
+bold_italic = { family = "MesloLGS NF", style = "Bold Italic" }
+
+[window]
+# 1.0 = opaque, 0.0 = fully transparent (matches the kitty/WSL configs' 0.90).
+opacity = 0.90
+padding = { x = 6, y = 6 }
+dynamic_padding = true
+dynamic_title = true
+
+[scrolling]
+history = 10000
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
