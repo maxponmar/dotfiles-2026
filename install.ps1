@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Dotfiles installer for native Windows 11 (PowerShell) — Neovim + Alacritty.
+  Dotfiles installer for native Windows 11 (PowerShell) - Neovim + Alacritty.
 
 .DESCRIPTION
   The Windows counterpart to install.sh. Windows has no tmux and this machine
@@ -88,7 +88,7 @@ function Install-WingetPackage([string]$id) {
 
 function Install-Deps([string[]]$ids) {
   if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    Warn "winget not found — install 'App Installer' from the Microsoft Store, or install these manually: $($ids -join ', ')"
+    Warn "winget not found - install 'App Installer' from the Microsoft Store, or install these manually: $($ids -join ', ')"
     return
   }
   foreach ($id in $ids) { Install-WingetPackage $id }
@@ -116,7 +116,7 @@ function Install-MesloNerdFont {
       New-ItemProperty -Path $regKey -Name "$name (TrueType)" -Value $dst -PropertyType String -Force | Out-Null
     }
   }
-  Ok "MesloLGS NF installed — set Alacritty/terminal font to 'MesloLGS NF'"
+  Ok "MesloLGS NF installed - set Alacritty/terminal font to 'MesloLGS NF'"
 }
 
 # --- linking helpers -------------------------------------------------------
@@ -166,7 +166,7 @@ function Component-Alacritty {
 
 # --- run -------------------------------------------------------------------
 Log "Windows dotfiles install  repo=$RepoRoot"
-if ($DryRun) { Warn "DRY RUN — no changes will be made" }
+if ($DryRun) { Warn "DRY RUN - no changes will be made" }
 
 if ($Nvim)      { Component-Nvim }
 if ($Alacritty) { Component-Alacritty }
