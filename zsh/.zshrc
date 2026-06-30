@@ -11,11 +11,20 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(
   git
+  vi-mode
   zsh-autosuggestions
   zsh-syntax-highlighting
   zsh-z
   fzf
 )
+
+# vi-mode: change cursor shape between insert (line) and normal (block) so the
+# active mode is visible. KEYTIMEOUT=1 (10ms) removes the ESC -> normal-mode lag
+# that the 400ms zsh default otherwise causes. Set before oh-my-zsh sources the
+# plugins. vi-mode is listed before fzf above so fzf keeps Ctrl+R for history
+# search instead of vi-mode's incremental search.
+VI_MODE_SET_CURSOR=true
+KEYTIMEOUT=1
 
 source $ZSH/oh-my-zsh.sh
 
@@ -33,3 +42,19 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
+
+# pnpm
+export PNPM_HOME="/Users/maximiliano/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
+# Open new interactive shells in the projects directory. Guarded with $PWD ==
+# $HOME so it only fires when a terminal opens fresh at home, leaving editor
+# terminals, tmux panes, and subshells that already started inside a project
+# exactly where they are. The -d check avoids a cd error if the dir is missing.
+if [[ -o interactive && "$PWD" == "$HOME" && -d "$HOME/Repositories" ]]; then
+  cd "$HOME/Repositories"
+fi
